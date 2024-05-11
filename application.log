@@ -1,0 +1,66 @@
+2024-05-11 01:38:59,295 - core.middleware - INFO - Database Connection Successfull
+2024-05-11 01:39:54,120 - core.middleware - INFO - Database Connection Successfull
+ core.middleware - 2024-05-11 01:40:18,475 - INFO - Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 01:40:35,330 -  Database Connection Successfull
+ ERROR - core.middleware - 2024-05-11 01:45:44,293 -  Database connection failed (Attempts: 1/3)
+ ERROR - core.middleware - 2024-05-11 01:45:44,293 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:45:47,311 -  Database connection failed (Attempts: 2/3)
+ ERROR - core.middleware - 2024-05-11 01:45:47,311 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:45:50,327 -  Database connection failed (Attempts: 3/3)
+ ERROR - core.middleware - 2024-05-11 01:45:50,327 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:45:53,332 -  Failed to establish database connection after 3 attempts
+ ERROR - core.middleware - 2024-05-11 01:46:48,414 -  Database connection failed (Attempts: 1/3)
+ ERROR - core.middleware - 2024-05-11 01:46:48,414 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:46:51,432 -  Database connection failed (Attempts: 2/3)
+ ERROR - core.middleware - 2024-05-11 01:46:51,432 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:46:54,451 -  Database connection failed (Attempts: 3/3)
+ ERROR - core.middleware - 2024-05-11 01:46:54,451 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:46:57,455 -  Failed to establish database connection after 3 attempts
+ ERROR - core.middleware - 2024-05-11 01:48:29,303 -  Database connection failed (Attempts: 1/3)
+ ERROR - core.middleware - 2024-05-11 01:48:29,303 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:48:32,326 -  Database connection failed (Attempts: 2/3)
+ ERROR - core.middleware - 2024-05-11 01:48:32,326 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:48:35,346 -  Database connection failed (Attempts: 3/3)
+ ERROR - core.middleware - 2024-05-11 01:48:35,346 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:48:38,347 -  Failed to establish database connection after 3 attempts
+ ERROR - core.middleware - 2024-05-11 01:48:58,288 -  Database connection failed (Attempts: 1/3)
+ ERROR - core.middleware - 2024-05-11 01:48:58,289 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:49:03,309 -  Database connection failed (Attempts: 2/3)
+ ERROR - core.middleware - 2024-05-11 01:49:03,309 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:49:08,327 -  Database connection failed (Attempts: 3/3)
+ ERROR - core.middleware - 2024-05-11 01:49:08,327 -  Error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "blogging-system" does not exist
+
+ ERROR - core.middleware - 2024-05-11 01:49:13,329 -  Failed to establish database connection after 3 attempts
+ INFO - core.middleware - 2024-05-11 01:53:23,449 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 01:57:29,753 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 01:58:30,995 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:01:03,934 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:04:02,551 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:04:34,573 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:06:41,077 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:07:09,562 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:07:11,573 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:07:26,700 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:10:30,224 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:10:48,662 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:16:36,139 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:17:20,573 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:17:56,832 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:24:13,966 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:25:26,124 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:27:18,429 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:30:20,303 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:35:30,687 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:36:11,138 -  Database Connection Successfull
+ INFO - core.middleware - 2024-05-11 02:38:04,509 -  Database Connection Successfull

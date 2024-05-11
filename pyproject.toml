@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "blogging"
+name = "ecommerce-api"
 version = "0.1.0"
 description = ""
 authors = ["Precious Ohanyere <obbyprecious24@gmail.com>"]
@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = {extras = ["all"], version = "^0.111.0"}
+sqlalchemy = "^2.0.30"
+psycopg2-binary = "^2.9.9"
+alembic = "^1.13.1"
 
 
 [build-system]
