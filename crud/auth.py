@@ -18,5 +18,8 @@ class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
         return email_query
 
 
+crud_auth_user = CRUDAuthUser(db=get_db(), model=AuthUser)
+
+
 def get_crud_auth_user(db=Depends(get_db)):
     return CRUDAuthUser(db=db, model=AuthUser)
