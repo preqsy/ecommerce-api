@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from models import auth_user
 from core.db import engine
 from core.middleware import start_up_db
-from endpoints import auth
+from endpoints import auth, customer
 
 auth_user.Base.metadata.create_all(bind=engine)
 
@@ -16,3 +16,4 @@ def start_up():
 
 
 app.include_router(auth.router)
+app.include_router(customer.router)

@@ -17,10 +17,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db = db
         self.model = model
 
-    def get_or_raise_execption(self, id: int) -> ModelType:
-        query_result = self._db.query(self.model).filter(id == id).first()
+    def get_or_raise_exception(self, id: int) -> ModelType:
+        query_result = self._db.query(self.model).filter(self.model.id == id).first()
         if not query_result:
-            raise MissingResources("Item with ID doesn't exist")
+            return None
         return query_result
 
     def get_by_auth_id(self, auth_id) -> ModelType:
@@ -30,8 +30,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return query_result, query_result.first()
 
     def _get_query_by_id(self, id):
-        query_result = self._db.query(self.model).filter(id == id)
-        if not query_result:
+        query_result = self._db.query(self.model).filter(self.model.id == id)
+        if not query_result.first():
             raise MissingResources("Item with ID doesn't exist")
         return query_result
 
@@ -56,11 +56,26 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.commit()
         return True
 
-    async def update(self, id, data_dict: UpdateSchemaType):
+    async def update(self, id, data_obj: UpdateSchemaType):
         query = self._get_query_by_id(id)
-        # if isinstance(data_obj, UpdateSchemaType):
-        # data_dict = data_obj.model_dump()
-        data_dict["updated_timestamp"] = datetime.utcnow()
-        query.update(data_dict, synchronize_session=False)
+        print(type(query))
+        data_obj["updated_timestamp"] = datetime.utcnow()
+        query.update(data_obj, synchronize_session=False)
         self._db.commit()
-        return data_dict
+        return data_obj
+
+    # async def update_by_auth_id(self, auth_id, data_dict: UpdateSchemaType):
+    #     query, _ = self.get_by_auth_id(auth_id)
+    #     # if isinstance(data_obj, UpdateSchemaType):
+    #     # data_dict = data_obj.model_dump()
+    #     data_dict["updated_timestamp"] = datetime.utcnow()
+    #     query.update(data_dict, synchronize_session=False)
+    #     self._db.commit()
+    #     return data_dict
+    def get_by_username(self, username: str) -> str:
+        username = (
+            self._db.query(self.model).filter(self.model.username == username).first()
+        )
+        if not username:
+            return None
+        return username.username

@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import Enum
 from typing import ClassVar, Optional
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator, root_validator
 from core.schema import Token
+from utils.validate_password import validate_password
 
 
 class Roles(str, Enum):
@@ -11,10 +12,21 @@ class Roles(str, Enum):
 
 
 class AuthUserCreate(BaseModel):
+    PASSWORD: ClassVar[str] = "password"
     email: EmailStr
     password: str
     default_role: Roles
     is_superuser: bool = Field(False, hidden_from_schema=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_password(cls, values):
+        password = values.get(cls.PASSWORD)
+        if not validate_password(password):
+            raise ValueError(
+                "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number or one special character"
+            )
+        return values
 
 
 class AuthUserResponse(BaseModel):
