@@ -17,7 +17,7 @@ class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
             return None
         return email_query
 
-    async def update_email_status(self, id, data_dict: dict):
+    async def update_email_or_phone_status(self, id, data_dict: dict):
         user_query = self._db.query(self.model).filter(self.model.id == id)
         if not user_query:
             return None

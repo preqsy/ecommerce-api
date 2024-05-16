@@ -3,10 +3,12 @@ from fastapi import APIRouter, Depends, status, BackgroundTasks
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
 from crud.auth import CRUDAuthUser, get_crud_auth_user
+from crud.otp import crud_otp
 from crud.customer import CRUDCustomer, get_crud_customer
 from models.auth_user import AuthUser, Customer
 from schemas.auth import Roles
 from schemas.customer import CustomerAuthDetails, CustomerCreate, CustomerReturn
+from schemas.otp import OTPCreate, OTPType
 
 router = APIRouter(prefix="/customer", tags=["Customer"])
 
@@ -34,9 +36,12 @@ async def create_customer(
         first_name=data_obj.first_name,
         last_name=data_obj.last_name,
         phone_number=data_obj.phone_number,
-        phone_verified=True,
+        # auth_id=current_user.id,
     )
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, customer_auth_details.model_dump()
     )
+    otp_data_obj = OTPCreate(auth_id=current_user.id, otp_type=OTPType.PHONE_NUMBER)
+    background_tasks.add_task(crud_otp.create, otp_data_obj)
+
     return customer
