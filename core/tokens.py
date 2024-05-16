@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
 from fastapi import Depends
+from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 
 from core import settings
+from core.db import get_db
 from core.errors import CredentialException
+from models.auth_user import AuthUser
 from .schema import Token, TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -53,5 +56,9 @@ def verify_access_token(token):
     return token_data
 
 
-def get_current_auth_user(token=Depends(oauth2_scheme)):
+def get_current_auth_user(token=Depends(oauth2_scheme), db: Session = Depends(get_db)):
     token = verify_access_token(token)
+    auth_user = db.query(AuthUser).filter(AuthUser.id == token.user_id).first()
+    if not auth_user or not auth_user.email_verified:
+        raise CredentialException("User not found or emailt not verified")
+    return auth_user

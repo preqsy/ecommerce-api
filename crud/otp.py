@@ -21,15 +21,7 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
         _, otp_query = self.get_by_auth_id(auth_id)
         if otp_query is None or otp_query.otp != token:
             return None
-        await self.delete_otp(auth_id)
-        return True
-
-    async def delete_otp(self, auth_id: int):
-        otp_query, _ = self.get_by_auth_id(auth_id)
-        if not otp_query:
-            return None
-        otp_query.delete(synchronize_session=False)
-        self._db.commit()
+        return otp_query
 
 
 crud_otp = CRUDOtp(db=get_db(), model=OTP)

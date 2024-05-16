@@ -57,14 +57,20 @@ async def verify_email(
     crud_otp: CRUDOtp = Depends(get_crud_otp),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ):
-    if not crud_auth_user.get_or_raise_execption(id=data_obj.auth_id):
+    if not crud_auth_user.get_or_raise_exception(id=data_obj.auth_id):
         MissingResources
     otp_verify = await crud_otp.verify_otp(
         token=data_obj.token, auth_id=data_obj.auth_id
     )
     if not otp_verify:
         raise InvalidRequest("Invalid OTP")
-    await crud_auth_user.update(
+    await crud_auth_user.update_email_status(
         id=data_obj.auth_id, data_dict={AuthUser.EMAIL_VERIFIED: True}
     )
+    await crud_otp.delete(id=otp_verify.id)
     return VerifiedEmail(email_verified=True)
+
+
+@router.post("/token", status_code=status.HTTP_201_CREATED)
+async def login_user():
+    pass
