@@ -16,6 +16,7 @@ from core.db import Base
 class AuthUser(Base):
     __tablename__ = "auth_details"
     EMAIL_VERIFIED: ClassVar[str] = "email_verified"
+    PHONE_VERIFIED: ClassVar[str] = "phone_verified"
     UPDATED_TIMESTAMP: ClassVar[str] = "updated_timestamp"
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -82,6 +83,7 @@ class RefreshToken(Base):
     )
     refresh_token = Column(String, nullable=False)
     active = Column(Boolean, default=True)
+    user_agent = Column(String, nullable=True)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     expires_on = Column(
         TIMESTAMP(timezone=True), server_default=text("now() + interval '14 days'")
@@ -96,6 +98,7 @@ class OTP(Base):
         nullable=False,
     )
     otp = Column(String, nullable=False)
+    otp_type = Column(String, nullable=False)
     active = Column(Boolean, default=True)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     expires_on = Column(

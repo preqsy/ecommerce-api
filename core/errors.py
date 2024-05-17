@@ -16,7 +16,7 @@ class MissingResources(HTTPException):
 
 class ResourcesExist(HTTPException):
     def __init__(self, message=""):
-        return super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=message)
+        return super().__init__(status_code=status.HTTP_409_CONFLICT, detail=message)
 
 
 class InvalidRequest(HTTPException):

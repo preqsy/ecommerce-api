@@ -41,7 +41,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.add(rsp_result)
         self._db.commit()
         self._db.refresh(rsp_result)
-        print(type(rsp_result))
+
         return rsp_result
 
     async def get_username(self, id: str) -> bool:
@@ -56,22 +56,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.commit()
         return True
 
-    async def update(self, id, data_obj: UpdateSchemaType):
+    async def update(self, id, data_obj: UpdateSchemaType) -> UpdateSchemaType:
         query = self._get_query_by_id(id)
-        print(type(query))
         data_obj["updated_timestamp"] = datetime.utcnow()
         query.update(data_obj, synchronize_session=False)
         self._db.commit()
         return data_obj
 
-    # async def update_by_auth_id(self, auth_id, data_dict: UpdateSchemaType):
-    #     query, _ = self.get_by_auth_id(auth_id)
-    #     # if isinstance(data_obj, UpdateSchemaType):
-    #     # data_dict = data_obj.model_dump()
-    #     data_dict["updated_timestamp"] = datetime.utcnow()
-    #     query.update(data_dict, synchronize_session=False)
-    #     self._db.commit()
-    #     return data_dict
     def get_by_username(self, username: str) -> str:
         username = (
             self._db.query(self.model).filter(self.model.username == username).first()

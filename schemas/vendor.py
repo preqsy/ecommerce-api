@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Annotated, Optional
-from pydantic import BaseModel, Field, StringConstraints, constr
+from typing import Optional
+from typing_extensions import Annotated
+from pydantic import AnyHttpUrl, BaseModel, Field, StringConstraints
 
 
-class CustomerCreate(BaseModel):
+class VendorCreate(BaseModel):
     first_name: Annotated[str, StringConstraints(min_length=3, to_lower=True)]
     last_name: Annotated[str, StringConstraints(min_length=3, to_lower=True)]
     username: Annotated[str, StringConstraints(min_length=3, to_lower=True)]
@@ -12,15 +13,18 @@ class CustomerCreate(BaseModel):
     country: str
     state: str
     address: str
+    bio: str
+    profile_picture: Optional[AnyHttpUrl] = None
+    ratings: Optional[int] = Field(ge=0, le=5)
 
 
-class CustomerAuthDetails(BaseModel):
+class VendorAuthDetails(BaseModel):
     first_name: str
     last_name: str
     phone_number: str
 
 
-class CustomerReturn(BaseModel):
+class VendorReturn(BaseModel):
     id: int
     first_name: str
     last_name: str
@@ -30,6 +34,9 @@ class CustomerReturn(BaseModel):
     country: str
     state: str
     address: str
+    bio: str
+    profile_picture: Optional[AnyHttpUrl] = None
+    ratings: Optional[int]
     is_superuser: Optional[bool] = None
     created_timestamp: datetime
     updated_timestamp: Optional[datetime] = None

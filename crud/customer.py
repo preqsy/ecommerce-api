@@ -6,10 +6,6 @@ from schemas.customer import CustomerCreate
 
 
 class CRUDCustomer(CRUDBase[Customer, CustomerCreate, CustomerCreate]):
-    # def get_by_auth_id(self, auth_id) -> Customer:
-    #     auth_query = (
-    #         self._db.query(self.model).filter(self.model.auth_id == auth_id).first()
-    #     )
     pass
 
 

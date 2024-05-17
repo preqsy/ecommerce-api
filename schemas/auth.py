@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import ClassVar, Optional
 from pydantic import BaseModel, EmailStr, Field, model_validator, root_validator
-from core.schema import Token
+from core.schema import Tokens
 from utils.validate_password import validate_password
 
 
@@ -46,7 +46,7 @@ class AuthUserResponse(BaseModel):
 
 class RegisterAuthUserResponse(BaseModel):
     auth_user: AuthUserResponse
-    tokens: Token
+    tokens: Tokens
 
 
 class AuthUserUpdate(BaseModel):
@@ -55,3 +55,11 @@ class AuthUserUpdate(BaseModel):
 
 class VerifiedEmail(BaseModel):
     email_verified: bool
+
+
+class LogoutResponse(BaseModel):
+    logout: bool = False
+
+
+class TokenDeactivate(BaseModel):
+    access_token: str
