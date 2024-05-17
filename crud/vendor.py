@@ -1,8 +1,9 @@
 from fastapi import Depends
+
 from core.db import get_db
 from crud.base import CRUDBase
 from models.auth_user import Vendor
-from schemas.vendor import VendorCreate
+from schemas import VendorCreate
 
 
 class CRUDVendor(CRUDBase[Vendor, VendorCreate, VendorCreate]):

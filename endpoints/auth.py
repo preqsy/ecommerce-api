@@ -8,16 +8,17 @@ from core.schema import Tokens
 from core.tokens import deactivate_token, generate_tokens, get_current_auth_user
 from crud.auth import CRUDAuthUser, get_crud_auth_user
 from crud.otp import CRUDOtp, crud_otp, get_crud_otp
-from schemas.auth import (
+from schemas import (
     AuthUserCreate,
     AuthUserResponse,
     LogoutResponse,
     RegisterAuthUserResponse,
     TokenDeactivate,
     VerifiedEmail,
+    OTPCreate,
+    OTPType,
 )
 from models.auth_user import OTP, AuthUser, RefreshToken
-from schemas.otp import OTPCreate, OTPType
 from utils.email_validation import email_validate
 from utils.password_utils import hash_password, verify_password
 

@@ -1,11 +1,12 @@
 from fastapi import Depends
+from sqlalchemy import desc
+
 from core.db import get_db
 from core.errors import InvalidRequest
 from crud.base import CRUDBase
 from models.auth_user import OTP
-from schemas.otp import OTPCreate
+from schemas import OTPCreate
 from utils.generate_otp import generate_otp
-from sqlalchemy import desc
 
 
 class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
