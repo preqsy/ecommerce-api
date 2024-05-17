@@ -8,7 +8,9 @@ from fastapi.security import OAuth2PasswordBearer
 from core import settings
 from core.db import get_db
 from core.errors import CredentialException, InvalidRequest
+from crud.auth import CRUDAuthUser, get_crud_auth_user
 from models.auth_user import AuthUser
+from schemas.auth import Roles
 from .schema import Tokens, TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -78,5 +80,18 @@ def get_current_auth_user(token=Depends(oauth2_scheme), db: Session = Depends(ge
     token = verify_access_token(token)
     auth_user = db.query(AuthUser).filter(AuthUser.id == token.user_id).first()
     if not auth_user or not auth_user.email_verified:
-        raise CredentialException("User not found or emailt not verified")
+        raise CredentialException("User not found or email not verified")
+    return auth_user
+
+
+def get_current_verified_vendor(
+    token=Depends(oauth2_scheme),
+    crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+):
+    token = verify_access_token(token)
+    auth_user = crud_auth_user.get_or_raise_exception(id=token.user_id)
+    if not (auth_user.default_role == Roles.VENDOR):
+        raise InvalidRequest("Customer cannot perform this action")
+    if not (auth_user.email_verified and auth_user.phone_verified):
+        raise InvalidRequest("Complete your registration")
     return auth_user

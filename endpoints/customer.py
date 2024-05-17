@@ -36,7 +36,7 @@ async def create_customer(
         first_name=data_obj.first_name,
         last_name=data_obj.last_name,
         phone_number=data_obj.phone_number,
-        # auth_id=current_user.id,
+        role_id=customer.id,
     )
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, customer_auth_details.model_dump()

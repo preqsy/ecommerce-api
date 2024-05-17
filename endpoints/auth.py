@@ -65,8 +65,8 @@ async def verify(
     crud_otp: CRUDOtp = Depends(get_crud_otp),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ):
-    if not crud_auth_user.get_or_raise_exception(id=data_obj.auth_id):
-        MissingResources
+    # TODO: check this for error
+    crud_auth_user.get_or_raise_exception(id=data_obj.auth_id)
     otp_verify: OTP = await crud_otp.verify_otp(
         token=data_obj.token, auth_id=data_obj.auth_id, otp_type=data_obj.otp_type
     )

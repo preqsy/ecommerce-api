@@ -36,6 +36,7 @@ async def create_vendor(
         first_name=data_obj.first_name,
         last_name=data_obj.last_name,
         phone_number=data_obj.phone_number,
+        role_id=vendor.id,
     )
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, vendor_auth_details.model_dump()

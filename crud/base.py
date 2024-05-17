@@ -20,7 +20,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_or_raise_exception(self, id: int) -> ModelType:
         query_result = self._db.query(self.model).filter(self.model.id == id).first()
         if not query_result:
-            return None
+            raise MissingResources("ID not found")
         return query_result
 
     def get_by_auth_id(self, auth_id) -> ModelType:
