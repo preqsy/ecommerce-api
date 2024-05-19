@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Generic, Type, TypeVar
+from typing import Any, Generic, Type, TypeVar
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -20,7 +20,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_or_raise_exception(self, id: int) -> ModelType:
         query_result = self._db.query(self.model).filter(self.model.id == id).first()
         if not query_result:
-            return None
+            raise MissingResources("ID not found")
         return query_result
 
     def get_by_auth_id(self, auth_id) -> ModelType:
@@ -56,12 +56,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.commit()
         return True
 
-    async def update(self, id, data_obj: UpdateSchemaType) -> UpdateSchemaType:
+    async def update(self, id, data_obj: UpdateSchemaType) -> dict[str, Any]:
         query = self._get_query_by_id(id)
-        data_obj["updated_timestamp"] = datetime.utcnow()
-        query.update(data_obj, synchronize_session=False)
+        data_dict = data_obj.model_dump(exclude_unset=True)
+        data_dict["updated_timestamp"] = datetime.utcnow()
+        query.update(data_dict, synchronize_session=False)
         self._db.commit()
-        return data_obj
+        return data_dict
 
     def get_by_username(self, username: str) -> str:
         username = (

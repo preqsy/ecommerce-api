@@ -5,10 +5,14 @@ from core.tokens import get_current_auth_user
 from crud.auth import CRUDAuthUser, get_crud_auth_user
 from crud.otp import crud_otp
 from crud.customer import CRUDCustomer, get_crud_customer
-from models.auth_user import AuthUser, Customer
-from schemas.auth import Roles
-from schemas.customer import CustomerAuthDetails, CustomerCreate, CustomerReturn
-from schemas.otp import OTPCreate, OTPType
+from models.auth_user import AuthUser
+from schemas import (
+    CustomerCreate,
+    CustomerReturn,
+    OTPCreate,
+    OTPType,
+)
+from schemas.base import RoleAuthDetailsUpdate, Roles
 
 router = APIRouter(prefix="/customer", tags=["Customer"])
 
@@ -32,11 +36,11 @@ async def create_customer(
         raise ResourcesExist("username taken")
     data_obj.auth_id = current_user.id
     customer = await crud_customer.create(data_obj)
-    customer_auth_details = CustomerAuthDetails(
+    customer_auth_details = RoleAuthDetailsUpdate(
         first_name=data_obj.first_name,
         last_name=data_obj.last_name,
         phone_number=data_obj.phone_number,
-        # auth_id=current_user.id,
+        role_id=customer.id,
     )
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, customer_auth_details.model_dump()

@@ -1,14 +1,11 @@
 from datetime import datetime
-from enum import Enum
 from typing import ClassVar, Optional
-from pydantic import BaseModel, EmailStr, Field, model_validator, root_validator
+
+from pydantic import BaseModel, EmailStr, Field, model_validator
+
 from core.schema import Tokens
+from schemas.base import ReturnBaseModel, Roles
 from utils.validate_password import validate_password
-
-
-class Roles(str, Enum):
-    CUSTOMER = "customer"
-    VENDOR = "vendor"
 
 
 class AuthUserCreate(BaseModel):
@@ -29,8 +26,9 @@ class AuthUserCreate(BaseModel):
         return values
 
 
-class AuthUserResponse(BaseModel):
+class AuthUserResponse(ReturnBaseModel):
     ID: ClassVar[str] = "id"
+
     id: Optional[int] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None

@@ -1,8 +1,9 @@
 from fastapi import Depends
+
 from core.db import get_db
 from crud.base import CRUDBase
 from models.auth_user import Customer
-from schemas.customer import CustomerCreate
+from schemas import CustomerCreate
 
 
 class CRUDCustomer(CRUDBase[Customer, CustomerCreate, CustomerCreate]):

@@ -6,9 +6,17 @@ from crud.auth import CRUDAuthUser, get_crud_auth_user
 from crud.vendor import CRUDVendor, get_crud_vendor
 from crud.otp import crud_otp
 from models.auth_user import AuthUser
-from schemas.auth import Roles
-from schemas.otp import OTPCreate, OTPType
-from schemas.vendor import VendorAuthDetails, VendorCreate, VendorReturn
+
+
+from schemas import (
+    OTPCreate,
+    OTPType,
+    VendorCreate,
+    VendorReturn,
+)
+
+from schemas.base import RoleAuthDetailsUpdate, Roles
+
 
 router = APIRouter(prefix="/vendor", tags=["Vendor"])
 
@@ -32,10 +40,11 @@ async def create_vendor(
         raise ResourcesExist("username taken")
     data_obj.auth_id = current_user.id
     vendor = await crud_vendor.create(data_obj)
-    vendor_auth_details = VendorAuthDetails(
+    vendor_auth_details = RoleAuthDetailsUpdate(
         first_name=data_obj.first_name,
         last_name=data_obj.last_name,
         phone_number=data_obj.phone_number,
+        role_id=vendor.id,
     )
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, vendor_auth_details.model_dump()

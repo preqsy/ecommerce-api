@@ -20,6 +20,7 @@ class AuthUser(Base):
     UPDATED_TIMESTAMP: ClassVar[str] = "updated_timestamp"
 
     id = Column(Integer, primary_key=True, nullable=False)
+    role_id = Column(Integer, nullable=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     email = Column(String, nullable=False, unique=True)
