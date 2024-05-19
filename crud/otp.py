@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends
 from sqlalchemy import desc
 
@@ -27,6 +28,14 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
             return None
         if otp_query.otp_type != otp_type:
             raise InvalidRequest("Invalid Otp Type")
+
+        current_time = datetime.now(timezone.utc)
+        created_timestamp = otp_query.created_timestamp
+        expiration_time = created_timestamp + timedelta(minutes=10)
+
+        if current_time > expiration_time:
+            await self.delete(otp_query.id)
+            raise InvalidRequest("OTP has expired")
         return otp_query
 
 

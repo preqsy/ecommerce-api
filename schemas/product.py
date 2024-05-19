@@ -37,3 +37,20 @@ class ProductReturn(ReturnBaseModel):
     price: float
     created_timestamp: datetime
     updated_timestamp: Optional[datetime] = None
+
+
+class ProductUpdate(BaseModel):
+    product_name: Optional[str] = None
+    product_image: Optional[AnyHttpUrl] = None
+    category: Optional[str] = None
+    short_description: Optional[str] = None
+    sku: Optional[str] = None
+    product_status: Optional[bool] = None
+    long_description: Optional[str] = None
+    stock: Optional[int] = None
+    price: Optional[float] = None
+
+
+class ProductUpdateReturn(ProductUpdate):
+    created_timestamp: Optional[datetime] = None
+    updated_timestamp: Optional[datetime] = None
