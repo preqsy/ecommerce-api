@@ -1,3 +1,3 @@
 """CRUD Operations Logic"""
 
-from .otp import crud_otp
+from .otp import crud_otp, get_crud_otp

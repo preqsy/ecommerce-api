@@ -95,6 +95,12 @@ async def login_user(
     user_query = crud_auth_user.get_by_email(email=data_obj.username)
     if not user_query:
         raise InvalidRequest("Incorrect Credentials")
+
+    if not user_query.email_verified:
+        raise InvalidRequest("Unverified Email")
+
+    if not user_query.phone_number:
+        raise InvalidRequest("Unverified Phone Number")
     if not verify_password(
         plain_password=data_obj.password, hashed_password=user_query.password
     ):

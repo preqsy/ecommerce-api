@@ -6,8 +6,8 @@ from core.tokens import (
 )
 from crud.product import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product
 from models import AuthUser
-from schemas import CartCreate
-from schemas.product import CartReturn, CartUpdate
+from schemas import CartCreate, CartReturn, CartUpdate
+
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
 

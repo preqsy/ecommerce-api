@@ -18,5 +18,8 @@ from .product import (
     CartCreate,
     ProductUpdateReturn,
     ProductUpdate,
+    CartReturn,
+    CartUpdate,
+    CartTotalAmount,
 )
 from .vendor import VendorCreate, VendorReturn
