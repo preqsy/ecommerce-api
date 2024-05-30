@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 import threading
+
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
+import jwt
+from jwt.exceptions import InvalidTokenError
 from fastapi.security import OAuth2PasswordBearer
 
 from core import settings
@@ -71,7 +73,7 @@ def verify_access_token(token):
         if not user_id:
             CredentialException("invalid token")
         token_data = TokenData(user_id=user_id, user_agent=user_agent)
-    except JWTError:
+    except InvalidTokenError:
         raise CredentialException("Expired token")
     return token_data
 

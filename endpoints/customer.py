@@ -43,7 +43,7 @@ async def create_customer(
         role_id=customer.id,
     )
     background_tasks.add_task(
-        crud_auth_user.update, current_user.id, customer_auth_details.model_dump()
+        crud_auth_user.update, current_user.id, customer_auth_details
     )
     otp_data_obj = OTPCreate(auth_id=current_user.id, otp_type=OTPType.PHONE_NUMBER)
     background_tasks.add_task(crud_otp.create, otp_data_obj)
