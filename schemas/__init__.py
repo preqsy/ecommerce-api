@@ -12,5 +12,14 @@ from .auth import (
 from .customer import CustomerCreate, CustomerReturn
 
 from .otp import OTPCreate, OTPType
-from .product import ProductCreate, ProductReturn
+from .product import (
+    ProductCreate,
+    ProductReturn,
+    CartCreate,
+    ProductUpdateReturn,
+    ProductUpdate,
+    CartReturn,
+    CartUpdate,
+    CartTotalAmount,
+)
 from .vendor import VendorCreate, VendorReturn

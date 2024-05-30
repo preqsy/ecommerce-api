@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from typing import ClassVar
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -10,13 +11,24 @@ from sqlalchemy import (
     TIMESTAMP,
     text,
 )
+from sqlalchemy.orm import relationship
 from core.db import Base
+
+from models.cart import Cart
 
 
 class AuthUser(Base):
+
     __tablename__ = "auth_details"
+
     EMAIL_VERIFIED: ClassVar[str] = "email_verified"
     PHONE_VERIFIED: ClassVar[str] = "phone_verified"
+    UPDATED_TIMESTAMP: ClassVar[str] = "updated_timestamp"
+    CREATED_TIMESTAMP: ClassVar[str] = "created_timestamp"
+    ID: ClassVar[str] = "id"
+    EMAIL: ClassVar[str] = "email"
+    DEFAULT_ROLE: ClassVar[str] = "default_role"
+    PASSWORD: ClassVar[str] = "password"
     UPDATED_TIMESTAMP: ClassVar[str] = "updated_timestamp"
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -51,6 +63,7 @@ class Customer(Base):
     address = Column(String, nullable=False)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)
+    cart_items = relationship("Cart", back_populates="customer")
 
 
 class Vendor(Base):

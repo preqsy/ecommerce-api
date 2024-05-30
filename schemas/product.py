@@ -1,9 +1,11 @@
 from datetime import datetime
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, List, Optional
 from typing_extensions import Annotated
 from pydantic import AnyHttpUrl, BaseModel, Field, StringConstraints
 
+from models.cart import Cart
 from schemas.base import ProductCategory, ReturnBaseModel
+from schemas.customer import CustomerReturn
 
 
 class ProductCreate(BaseModel):
@@ -24,7 +26,6 @@ class ProductCreate(BaseModel):
 class ProductReturn(ReturnBaseModel):
     CREATED_TIMESTAMP: ClassVar[str] = "created_timestamp"
 
-    id: int
     vendor_id: int
     product_name: str
     product_image: AnyHttpUrl
@@ -35,8 +36,6 @@ class ProductReturn(ReturnBaseModel):
     long_description: str
     stock: int
     price: float
-    created_timestamp: datetime
-    updated_timestamp: Optional[datetime] = None
 
 
 class ProductUpdate(BaseModel):
@@ -54,3 +53,30 @@ class ProductUpdate(BaseModel):
 class ProductUpdateReturn(ProductUpdate):
     created_timestamp: Optional[datetime] = None
     updated_timestamp: Optional[datetime] = None
+
+
+class CartCreate(BaseModel):
+    product_id: int
+    customer_id: Optional[int] = None
+    session: Optional[int] = None
+    quantity: int = Field(default=1)
+
+
+class CartUpdate(BaseModel):
+
+    quantity: int = Field(default=1)
+
+
+class CartReturn(ReturnBaseModel):
+    product_id: int
+    quantity: int
+    customer_id: int
+    total_amount: Optional[int] = None
+    product: ProductReturn
+    customer: CustomerReturn
+
+
+class CartTotalAmount(CartReturn):
+    # cart: list
+    cart_items: List[CartReturn]
+    total_amount: float

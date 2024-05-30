@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 from core.db import Base
-from typing import ClassVar
 from sqlalchemy import (
     TEXT,
-    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -13,6 +13,9 @@ from sqlalchemy import (
     text,
     Float,
 )
+from sqlalchemy.orm import relationship
+
+# from models.cart import Cart
 
 
 class Product(Base):
@@ -33,3 +36,5 @@ class Product(Base):
     price = Column(Float, nullable=False)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)
+
+    cart_items = relationship("Cart", back_populates="product")

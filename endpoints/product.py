@@ -4,8 +4,7 @@ from core.errors import InvalidRequest
 from core.tokens import get_current_verified_vendor
 from crud.product import CRUDProduct, get_crud_product
 from models.auth_user import AuthUser
-from schemas import ProductCreate, ProductReturn
-from schemas.product import ProductUpdate, ProductUpdateReturn
+from schemas import ProductCreate, ProductReturn, ProductUpdate, ProductUpdateReturn
 from utils.generate_sku import generate_random_sku
 
 router = APIRouter(prefix="/products", tags=["Product"])
@@ -54,6 +53,16 @@ def get_products_vendor(
     product = crud_product.get_products_for_vendor(
         search=search, vendor_id=current_user.role_id, skip=skip, limit=limit
     )
+    return product
+
+
+@router.get("/price")
+def sort_product_by_price(
+    skip: int = Query(default=0),
+    limit: int = Query(default=20),
+    crud_product: CRUDProduct = Depends(get_crud_product),
+):
+    product = crud_product.sort_product_by_price(skip=skip, limit=limit)
     return product
 
 
