@@ -9,6 +9,6 @@ class OTPType(str, Enum):
 
 
 class OTPCreate(BaseModel):
-    token: Optional[str] = None
     auth_id: int
+    token: Optional[str] = None
     otp_type: OTPType

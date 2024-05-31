@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from core import settings
 from httpx import AsyncClient
+
 from main import app
 import pytest
 
@@ -20,7 +21,8 @@ def mock_get_db():
         db.close()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+# @pytest.fixture(scope="module")
 def client():
     # Drop Tables
     auth_user.Base.metadata.drop_all(bind=engine)
