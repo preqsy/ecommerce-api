@@ -22,7 +22,7 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
         self._db.refresh(new_otp)
         return True
 
-    async def verify_otp(self, token, auth_id, otp_type) -> OTP:
+    async def verify_otp(self, token, auth_id, otp_type) -> bool:
         _, otp_query = self.get_by_auth_id(auth_id)
         if otp_query is None or otp_query.otp != token:
             return None
@@ -36,7 +36,8 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
         if current_time > expiration_time:
             await self.delete(otp_query.id)
             raise InvalidRequest("OTP has expired")
-        return otp_query
+        await self.delete(id=otp_query.id)
+        return True
 
 
 crud_otp = CRUDOtp(db=get_db(), model=OTP)

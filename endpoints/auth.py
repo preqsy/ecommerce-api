@@ -3,11 +3,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from core.db import get_db
-from core.errors import InvalidRequest, MissingResources, ResourcesExist
+from core.errors import InvalidRequest, ResourcesExist
 from core.schema import Tokens
 from core.tokens import deactivate_token, generate_tokens, get_current_auth_user
 from crud.auth import CRUDAuthUser, get_crud_auth_user
-from crud.otp import CRUDOtp, crud_otp, get_crud_otp
+from crud.otp import crud_otp
 from schemas import (
     AuthUserCreate,
     AuthUserResponse,
@@ -63,25 +63,23 @@ async def register_user(
 @router.post("/verify", response_model=VerifiedEmail)
 async def verify(
     data_obj: OTPCreate,
-    crud_otp: CRUDOtp = Depends(get_crud_otp),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ):
     # TODO: check this for error
     crud_auth_user.get_or_raise_exception(id=data_obj.auth_id)
     otp_verify: OTP = await crud_otp.verify_otp(
-        token=data_obj.token, auth_id=data_obj.auth_id, otp_type=data_obj.otp_type
+        auth_id=data_obj.auth_id, token=data_obj.token, otp_type=data_obj.otp_type
     )
     if not otp_verify:
         raise InvalidRequest("Invalid OTP")
-    if otp_verify.otp_type == OTPType.EMAIL:
+    if data_obj.otp_type == OTPType.EMAIL:
         await crud_auth_user.update_email_or_phone_status(
             id=data_obj.auth_id, data_dict={AuthUser.EMAIL_VERIFIED: True}
         )
-    if otp_verify.otp_type == OTPType.PHONE_NUMBER:
+    if data_obj.otp_type == OTPType.PHONE_NUMBER:
         await crud_auth_user.update_email_or_phone_status(
             id=data_obj.auth_id, data_dict={AuthUser.PHONE_VERIFIED: True}
         )
-    await crud_otp.delete(id=otp_verify.id)
     return VerifiedEmail(email_verified=True)
 
 
@@ -96,11 +94,6 @@ async def login_user(
     if not user_query:
         raise InvalidRequest("Incorrect Credentials")
 
-    if not user_query.email_verified:
-        raise InvalidRequest("Unverified Email")
-
-    if not user_query.phone_number:
-        raise InvalidRequest("Unverified Phone Number")
     if not verify_password(
         plain_password=data_obj.password, hashed_password=user_query.password
     ):

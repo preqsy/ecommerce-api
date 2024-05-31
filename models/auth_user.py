@@ -20,15 +20,18 @@ from models.cart import Cart
 class AuthUser(Base):
 
     __tablename__ = "auth_details"
-
+    ID: ClassVar[str] = "id"
+    ROLE_ID: ClassVar[str] = "role_id"
+    FIRST_NAME: ClassVar[str] = "first_name"
+    LAST_NAME: ClassVar[str] = "last_name"
+    EMAIL: ClassVar[str] = "email"
+    PHONE_NUMBER: ClassVar[str] = "phone_number"
     EMAIL_VERIFIED: ClassVar[str] = "email_verified"
     PHONE_VERIFIED: ClassVar[str] = "phone_verified"
-    UPDATED_TIMESTAMP: ClassVar[str] = "updated_timestamp"
-    CREATED_TIMESTAMP: ClassVar[str] = "created_timestamp"
-    ID: ClassVar[str] = "id"
-    EMAIL: ClassVar[str] = "email"
-    DEFAULT_ROLE: ClassVar[str] = "default_role"
     PASSWORD: ClassVar[str] = "password"
+    DEFAULT_ROLE: ClassVar[str] = "default_role"
+    IS_SUPERUSER: ClassVar[str] = "is_superuser"
+    CREATED_TIMESTAMP: ClassVar[str] = "created_timestamp"
     UPDATED_TIMESTAMP: ClassVar[str] = "updated_timestamp"
 
     id = Column(Integer, primary_key=True, nullable=False)
