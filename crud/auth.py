@@ -9,7 +9,7 @@ from schemas import AuthUserCreate
 
 
 class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
-    def get_by_email(self, email: EmailStr) -> AuthUser:
+    def get_by_email(self, email: EmailStr) -> dict:
         email_query = (
             self._db.query(self.model).filter(self.model.email == email).first()
         )
