@@ -23,6 +23,9 @@ lock = threading.Lock()
 
 
 def deactivate_token(token):
+    if token in BLACKLISTED_TOKEN:
+        raise InvalidRequest("Already Logged Out")
+    verify_access_token(token)
     with lock:
         BLACKLISTED_TOKEN.append(token)
 
@@ -74,7 +77,7 @@ def verify_access_token(token):
             CredentialException("invalid token")
         token_data = TokenData(user_id=user_id, user_agent=user_agent)
     except InvalidTokenError:
-        raise CredentialException("Expired token")
+        raise CredentialException("Invalid token")
     return token_data
 
 

@@ -1,121 +1,202 @@
-from fastapi import BackgroundTasks
+from typing import Any
+
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
-from unittest.mock import MagicMock, patch
+from fastapi import status
+from unittest.mock import patch
+from httpx import AsyncClient
 
-from crud.otp import CRUDOtp
+from core.errors import InvalidRequest
+from core.tokens import get_current_auth_user, verify_access_token
+from crud.auth import get_crud_auth_user
 from main import app
-from crud.auth import CRUDAuthUser
-from utils.password_utils import hash_password
-
-client = TestClient(app)
-
-
-# Mock dependencies
-@pytest.fixture
-def db_session():
-    db = MagicMock(spec=Session)
-    yield db
-
-
-@pytest.fixture
-def crud_auth_user():
-    mock = MagicMock(spec=CRUDAuthUser)
-    yield mock
+from tests.conftest import mock_crud_auth_user
+from models.auth_user import AuthUser
+from schemas.otp import OTPType
+from tests.fixtures.auth_user_samples import (
+    sample_auth_user_create,
+    sample_auth_user_invalid_password,
+    sample_auth_user_query_result_first,
+    sample_auth_user_query_result_unverfied_email,
+    sample_auth_user_wrong_email,
+    sample_header,
+    sample_login_user,
+    sample_login_user_wrong_email,
+    sample_verify_auth_user,
+)
+from schemas.auth import RegisterAuthUserResponse
 
 
-@pytest.fixture
-def crud_otp():
-    mock = MagicMock(spec=CRUDOtp)
-    yield mock
+crud_otp_verify_path = "endpoints.auth.crud_otp.verify_otp"
+auth_endpoint_path = "endpoints.auth"
+verify_password_path = "utils.password_utils.verify_password"
 
 
-@pytest.fixture
-def background_tasks():
-    mock = MagicMock(spec=BackgroundTasks)
-    yield mock
+async def register_user(
+    client: AsyncClient,
+    sample_register_details: dict = sample_auth_user_create(),
+):
+
+    response = await client.post(
+        "/auth/register",
+        json=sample_register_details,
+        headers={"user_agent": "testing"},
+    )
+
+    return response
 
 
-# # Test the register_user endpoint
-# def test_register_user(db_session, crud_auth_user, crud_otp, background_tasks):
-#     with patch("core.db.get_db", return_value=db_session), patch(
-#         "crud.auth.get_crud_auth_user", return_value=crud_auth_user
-#     ), patch("crud.otp.get_crud_otp", return_value=crud_otp), patch(
-#         "fastapi.BackgroundTasks", return_value=background_tasks
-#     ):
+async def login_user_success(
+    client: AsyncClient,
+    sample_user_return_value: dict[str, Any] = sample_auth_user_query_result_first(),
+    login_details: dict[str, str] = sample_login_user(),
+):
+    await register_user(client)
 
-#         crud_auth_user.get_by_email.return_value = None
-#         crud_auth_user.create.return_value = MagicMock(id=1)
-#         crud_otp.create.return_value = MagicMock()
+    app.dependency_overrides[get_crud_auth_user] = lambda: mock_crud_auth_user
 
-#         response = client.post(
-#             "/auth/register",
-#             json={
-#                 "email": "preqsy1@gmail.com",
-#                 "password": "Testpassword1!",
-#                 "default_role": "customer",
-#             },
-#             headers={"user-agent": "test-agent"},
-#         )
+    sample_user = AuthUser(**sample_user_return_value)
+    mock_crud_auth_user.get_by_email.return_value = sample_user
 
-#         assert response.status_code == 201
-#         response_json = response.json()
-#         assert response_json["auth_user"]["email"] == "preqsy1@gmail.com"
+    with patch(verify_password_path) as mock_verify_password:
+        mock_verify_password.return_value = True
+        response = await client.post(
+            "/auth/token", data=login_details, headers=sample_header()
+        )
+
+    app.dependency_overrides = {}
+    return response
 
 
-# Test the verify endpoint
-# def test_verify_user(crud_auth_user, crud_otp):
-#     with patch("crud.auth.get_crud_auth_user", return_value=crud_auth_user), patch(
-#         "crud.otp.get_crud_otp", return_value=crud_otp
-#     ):
+@pytest.mark.asyncio
+@pytest.mark.freeze_time("2024-07-23 08:45:00.650334")
+async def test_register_success(client, database_override_dependencies):
 
-#         crud_auth_user.get_or_raise_exception.return_value = MagicMock()
-#         crud_otp.verify_otp.return_value = MagicMock(otp_type="EMAIL")
+    response = await register_user(client)
 
-#         response = client.post(
-#             "/auth/verify", json={"auth_id": 1, "token": "123456", "otp_type": "EMAIL"}
-#         )
-
-#         assert response.status_code == 200
+    new_user = RegisterAuthUserResponse(**response.json())
+    assert response.json() == new_user.model_dump()
+    assert response.status_code == status.HTTP_201_CREATED
 
 
-# # Test the login_user endpoint
-# def test_login_user(db_session, crud_auth_user):
-#     with patch("core.db.get_db", return_value=db_session), patch(
-#         "crud.auth.get_crud_auth_user", return_value=crud_auth_user
-#     ):
+@pytest.mark.asyncio
+async def test_register_wrong_email_format(client, database_override_dependencies):
+    response = await register_user(
+        client=client, sample_register_details=sample_auth_user_wrong_email()
+    )
 
-#         crud_auth_user.get_by_email.return_value = MagicMock(
-#             id=1, password=hash_password("Testpassword1!")
-#         )
-
-#         response = client.post(
-#             "/auth/token",
-#             data={"username": "test@example.com", "password": "Testpassword1!"},
-#             headers={
-#                 "user-agent": "test-agent",
-#                 "Content-Type": "application/x-www-form-urlencoded",
-#             },
-#         )
-
-#         assert response.status_code == 201
-#         response_json = response.json()
-#         assert "access_token" in response_json
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# # Test the logout_user endpoint
-# def test_logout_user(db_session):
-#     with patch("core.db.get_db", return_value=db_session), patch(
-#         "core.tokens.get_current_auth_user", return_value=MagicMock(id=1)
-#     ):
+@pytest.mark.asyncio
+async def test_register_wrong_password_format(client, database_override_dependencies):
+    response = await client.post(
+        "/auth/register",
+        json=sample_auth_user_invalid_password(),
+        headers=sample_header(),
+    )
 
-#         response = client.post(
-#             "/auth/logout",
-#             json={"access_token": "testtoken"},
-#             headers={"Authorization": "Bearer testtoken"},
-#         )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-#         assert response.status_code == 200
-#         response_json = response.json()
-#         assert response_json["logout"] is True
+
+@pytest.mark.asyncio
+async def test_verify_token(client, database_override_dependencies):
+
+    await register_user(client)
+
+    with patch(crud_otp_verify_path) as mock_crud_otp:
+
+        mock_crud_otp.return_value = True
+
+        rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
+
+        mock_crud_otp.assert_called_once_with(
+            auth_id=1,
+            token="930287",
+            otp_type=OTPType.EMAIL,
+        )
+
+        assert rsp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_login_success(client, database_override_dependencies):
+    response = await login_user_success(client)
+    assert response.json()["access_token"]
+    assert response.json()["refresh_token"]
+    access_token = response.json().get("access_token")
+    verify_access_token(token=access_token)
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.asyncio
+async def test_login_unverified_email(client, database_override_dependencies):
+    response = await login_user_success(
+        client=client,
+        sample_user_return_value=sample_auth_user_query_result_unverfied_email(),
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_login_nonexistent_user(client, database_override_dependencies):
+    await register_user(client)
+
+    response = await client.post(
+        "/auth/token", data=sample_login_user_wrong_email(), headers=sample_header()
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_login_wrong_password(client, database_override_dependencies):
+
+    response = await login_user_success(
+        client=client,
+        login_details={
+            "username": "obbyprecious12@gmail.com",
+            "password": "wrongemail",
+        },
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_logout_user_success(
+    client,
+    database_override_dependencies,
+):
+    login_rsp = await login_user_success(client)
+    access_token = login_rsp.json().get("access_token")
+    app.dependency_overrides[get_current_auth_user] = lambda: mock_crud_auth_user
+    mock_crud_auth_user.id = 1
+    with patch("endpoints.auth.deactivate_token") as mock_deactivate_token:
+        rsp = await client.post("/auth/logout", json={"access_token": access_token})
+        mock_deactivate_token.assert_called_once()
+
+    assert rsp.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_logout_user_invalid_token(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+
+    with patch("endpoints.auth.deactivate_token") as mock_deactivate_token:
+        mock_deactivate_token.side_effect = InvalidRequest("Invalid token")
+        rsp = await client.post(
+            "/auth/logout",
+            json={"access_token": "banana"},
+        )
+        mock_deactivate_token.assert_called_once()
+
+        assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_get_user_success(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+    rsp = await client.get("/auth/me")
+
+    assert rsp.status_code == status.HTTP_200_OK

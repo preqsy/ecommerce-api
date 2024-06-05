@@ -94,6 +94,9 @@ async def login_user(
     if not user_query:
         raise InvalidRequest("Incorrect Credentials")
 
+    if not user_query.email_verified:
+        raise InvalidRequest("Unverfied Email")
+
     if not verify_password(
         plain_password=data_obj.password, hashed_password=user_query.password
     ):
@@ -119,3 +122,11 @@ def logout_user(
     db.query(RefreshToken).filter(RefreshToken.auth_id == current_user.id).delete()
     db.commit()
     return LogoutResponse(logout=True)
+
+
+@router.get("/me", response_model=AuthUserResponse)
+def get_me(
+    current_user: AuthUser = Depends(get_current_auth_user),
+):
+
+    return current_user
