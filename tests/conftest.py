@@ -12,7 +12,8 @@ from models import auth_user, product, cart as cartmodel, AuthUser
 from .mock_dependencies import mock_crud_auth_user, mock_crud_customer
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+# @pytest.fixture(scope="module")
 def client():
     # Drop Tables
     auth_user.Base.metadata.drop_all(bind=engine)
@@ -26,7 +27,7 @@ def client():
     yield client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def database_override_dependencies():
     app.dependency_overrides[get_db] = mock_get_db
     yield

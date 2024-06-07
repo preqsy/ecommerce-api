@@ -5,4 +5,4 @@ from crud.customer import CRUDCustomer
 
 
 mock_crud_auth_user = MagicMock(spec=CRUDAuthUser)
-mock_crud_customer = MagicMock(return_value=CRUDCustomer)
+mock_crud_customer = MagicMock(spec=CRUDCustomer)

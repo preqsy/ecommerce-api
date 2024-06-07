@@ -28,6 +28,8 @@ async def create_customer(
 
     _, auth_user = crud_customer.get_by_auth_id(current_user.id)
 
+    print(auth_user)
+
     if auth_user:
         raise ResourcesExist("customer exists")
     if current_user.default_role != Roles.CUSTOMER:
@@ -42,6 +44,7 @@ async def create_customer(
         phone_number=data_obj.phone_number,
         role_id=customer.id,
     )
+    print(customer_auth_details)
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, customer_auth_details
     )

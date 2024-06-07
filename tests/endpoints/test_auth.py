@@ -99,7 +99,7 @@ async def test_register_wrong_password_format(client, database_override_dependen
 
 
 @pytest.mark.asyncio
-async def test_verify_token(client, database_override_dependencies):
+async def test_verify_token_email_success(client, database_override_dependencies):
 
     await register_user(client)
 
@@ -116,6 +116,26 @@ async def test_verify_token(client, database_override_dependencies):
         )
 
         assert rsp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_verify_email_token_wrong_token(client, database_override_dependencies):
+
+    await register_user(client)
+
+    with patch(crud_otp_verify_path) as mock_crud_otp:
+
+        mock_crud_otp.return_value = None
+
+        rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
+
+        mock_crud_otp.assert_called_once_with(
+            auth_id=1,
+            token="930287",
+            otp_type=OTPType.EMAIL,
+        )
+
+        assert rsp.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.asyncio
