@@ -1,8 +1,9 @@
 from datetime import datetime
+
 from unittest.mock import ANY
+
 from models.auth_user import AuthUser
 from schemas.otp import OTPType
-from passlib.context import CryptContext
 from utils.password_utils import pwd_context
 
 

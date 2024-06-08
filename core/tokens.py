@@ -113,3 +113,10 @@ def get_current_verified_customer(
     if not (auth_user.email_verified and auth_user.phone_verified):
         raise InvalidRequest("Complete your registration")
     return auth_user
+
+
+def create_forget_password_token(auth_id, user_agent):
+    return encode_jwt(
+        payload={"user_id": auth_id, "user_agent": user_agent},
+        expiry_time=timedelta(minutes=settings.FORGET_PASSWORD_EXPIRY_TIME),
+    )

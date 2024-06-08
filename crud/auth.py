@@ -9,7 +9,7 @@ from schemas import AuthUserCreate
 
 
 class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
-    def get_by_email(self, email: EmailStr) -> dict:
+    def get_by_email(self, email: EmailStr) -> AuthUser:
         email_query = (
             self._db.query(self.model).filter(self.model.email == email).first()
         )
@@ -24,6 +24,11 @@ class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
         user_query.update(data_dict, synchronize_session=False)
         self._db.commit()
 
+        return
+
+    async def update_password(self, data_dict: dict, id: int):
+        user_query = self._get_query_by_id(id)
+        user_query.update(data_dict, synchronize_session=False)
         return
 
 

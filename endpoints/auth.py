@@ -1,12 +1,19 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, Header, status
+from fastapi import APIRouter, Depends, BackgroundTasks, Header, Query, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from core.db import get_db
-from core.errors import InvalidRequest, ResourcesExist
+from core.errors import InvalidRequest, MissingResources, ResourcesExist
 from core.schema import Tokens
-from core.tokens import deactivate_token, generate_tokens, get_current_auth_user
+from core.tokens import (
+    create_forget_password_token,
+    deactivate_token,
+    generate_tokens,
+    get_current_auth_user,
+    verify_access_token,
+)
 from crud.auth import CRUDAuthUser, get_crud_auth_user
+
 from crud.otp import crud_otp
 from schemas import (
     AuthUserCreate,
@@ -17,6 +24,10 @@ from schemas import (
     VerifiedEmail,
     OTPCreate,
     OTPType,
+    NewPassword,
+    EmailIn,
+    ForgotPassword,
+    ResetPassword,
 )
 from models.auth_user import OTP, AuthUser, RefreshToken
 from utils.email_validation import email_validate
@@ -90,7 +101,7 @@ async def login_user(
     user_agent: str = Header(None),
     db: Session = Depends(get_db),
 ):
-    user_query = crud_auth_user.get_by_email(email=data_obj.username)
+    user_query = crud_auth_user.get_by_email(email=data_obj.username.lower())
     if not user_query:
         raise InvalidRequest("Incorrect Credentials")
 
@@ -122,6 +133,52 @@ def logout_user(
     db.query(RefreshToken).filter(RefreshToken.auth_id == current_user.id).delete()
     db.commit()
     return LogoutResponse(logout=True)
+
+
+@router.post("/forget-password", response_model=ForgotPassword)
+async def forget_password(
+    data_obj: EmailIn,
+    background_task: BackgroundTasks,
+    user_agent: str = Header(None),
+    crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+):
+    user_query = crud_auth_user.get_by_email(data_obj.email.lower())
+    if not user_query:
+        raise MissingResources()
+    otp_query = await crud_otp.check_number_of_trials(user_query.id)
+
+    if otp_query and otp_query.no_of_tries >= 3:
+        raise InvalidRequest("Max Limit Reached")
+
+    OTP_QUERY_COUNT = otp_query.no_of_tries if otp_query else 0
+
+    token = create_forget_password_token(auth_id=user_query.id, user_agent=user_agent)
+
+    otp_obj = OTPCreate(
+        auth_id=user_query.id, otp_type=OTPType.RESET_PASSWORD, token=token
+    )
+    background_task.add_task(crud_otp.create, otp_obj, OTP_QUERY_COUNT)
+
+    return ForgotPassword()
+
+
+@router.post("/reset-password", response_model=ResetPassword)
+async def reset_password(
+    data_obj: NewPassword,
+    token: str = Query(),
+    crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+):
+
+    token_data = verify_access_token(token)
+    user_query = crud_auth_user.get_or_raise_exception(id=token_data.user_id)
+    if verify_password(data_obj.password, hashed_password=user_query.password):
+        raise InvalidRequest("Can't change password to old password")
+    data_obj.password = hash_password(data_obj.password)
+    await crud_auth_user.update(id=token_data.user_id, data_obj=data_obj)
+    deactivate_token(token)
+    await crud_otp.delete_by_auth_id(auth_id=token_data.user_id)
+
+    return ResetPassword()
 
 
 @router.get("/me", response_model=AuthUserResponse)

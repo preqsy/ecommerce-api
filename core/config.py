@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRY_TIME: int = 20
     REFRESH_TOKEN_EXPIRY_TIME: int = 30
+    FORGET_PASSWORD_EXPIRY_TIME: int = 5
 
     class Config:
         env_path = env_path
