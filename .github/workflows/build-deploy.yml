@@ -8,10 +8,6 @@ jobs:
     services:
       postgres:
         image: postgres:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 50610903
-          POSTGRES_DB: e-commerce_test
         ports:
           - 5432:5432
         options: >-
@@ -22,7 +18,7 @@ jobs:
 
     env:
       SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}
-      TEST_SQLALCHEMY_DATABASE_URL: "postgresql+psycopg2://postgres:50610903@localhost:5432/e-commerce_test"
+      TEST_SQLALCHEMY_DATABASE_URL: ${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }}
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
 
@@ -47,6 +43,10 @@ jobs:
             echo "Waiting for PostgreSQL..."
             sleep 1
           done
+
+      - name: Create test database
+        run: |
+          psql -h localhost -U postgres -c "CREATE DATABASE \"e-commerce_test\";"
 
       - name: Test app
         run: poetry run pytest
