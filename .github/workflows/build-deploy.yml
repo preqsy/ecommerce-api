@@ -8,5 +8,9 @@ jobs:
     steps:
       - name: pulling git repo
         uses: actions/checkout@v4
-      - name: say hi to preqsy
-        run: echo "Hello Preqsy"
+      - name: Install python version 3.10
+        uses: actions/checkout@v4
+        with:
+          python-version: "3.10"
+      - name: Install all dependencies
+        run: poetry install
