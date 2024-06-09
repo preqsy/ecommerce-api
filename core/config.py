@@ -7,6 +7,7 @@ env_path = path / ".env"
 
 class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URL: str
+    TEST_SQLALCHEMY_DATABASE_URL: str
     JWT_SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRY_TIME: int = 20
