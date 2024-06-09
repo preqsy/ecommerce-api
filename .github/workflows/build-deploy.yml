@@ -15,14 +15,14 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U user"
+          --health-cmd="pg_isready -U postgres"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
     env:
       SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}
-      TEST_SQLALCHEMY_DATABASE_URL: ${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }}
+      TEST_SQLALCHEMY_DATABASE_URL: "postgresql+psycopg2://postgres:50610903@localhost:5432/e-commerce_test"
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
 
@@ -43,7 +43,7 @@ jobs:
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          until pg_isready -h localhost -p 5432 -U user; do
+          until pg_isready -h localhost -p 5432 -U postgres; do
             echo "Waiting for PostgreSQL..."
             sleep 1
           done
