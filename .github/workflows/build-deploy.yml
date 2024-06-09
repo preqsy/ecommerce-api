@@ -5,20 +5,47 @@ on: push
 jobs:
   job1:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U user"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     env:
-      SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}
+      SQLALCHEMY_DATABASE_URL: "postgresql://user:password@localhost:5432/test_db"
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
+
     steps:
       - name: pulling git repo
         uses: actions/checkout@v4
+
       - name: Install python version 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
       - name: install poetry
         run: pip install poetry
+
       - name: Install all dependencies
         run: poetry install
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
+
       - name: Test app
         run: poetry run pytest
