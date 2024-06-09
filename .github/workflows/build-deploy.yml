@@ -5,9 +5,6 @@ on: push
 jobs:
   job1:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:latest
 
     env:
       SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}
@@ -29,17 +26,6 @@ jobs:
 
       - name: Install all dependencies
         run: poetry install
-
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL..."
-            sleep 1
-          done
-
-      - name: Create test database
-        run: |
-          psql -h localhost -U postgres -c "CREATE DATABASE \"e-commerce_test\";"
 
       - name: Test app
         run: poetry run pytest
