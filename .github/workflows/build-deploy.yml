@@ -54,7 +54,7 @@ jobs:
           export PGPASSWORD=50610903
           psql -h localhost -U postgres -d postgres -c "CREATE DATABASE ecommerce_test;"
 
-      - name: Test app
+      - name: Testing app
         env:
           TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:50610903@localhost:5432/ecommerce_test"
         run: poetry run pytest
