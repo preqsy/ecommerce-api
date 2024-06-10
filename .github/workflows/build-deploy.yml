@@ -12,6 +12,21 @@ jobs:
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: e-commerce_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 50610903
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d commerce_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: pulling git repo
         uses: actions/checkout@v4
@@ -27,5 +42,19 @@ jobs:
       - name: Install all dependencies
         run: poetry install
 
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          while ! pg_isready -h localhost -p 5432 -U postgres; do
+            sleep 1
+          done
+
+      - name: Set up test database
+        run: |
+          export PGPASSWORD=50610903
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE e-commerce_test;"
+
       - name: Test app
+        env:
+          TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:50610903@localhost:5432/e-commerce_test"
         run: poetry run pytest
