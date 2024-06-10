@@ -12,10 +12,15 @@ from utils.generate_otp import generate_otp
 
 class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
 
-    def create(self, data_obj: OTPCreate) -> bool:
-        data_obj.token = generate_otp()
+    def create(self, data_obj: OTPCreate, no_of_tries: int = 0) -> bool:
+        if not data_obj.token:
+            data_obj.token = generate_otp()
+
         new_otp = OTP(
-            auth_id=data_obj.auth_id, otp=data_obj.token, otp_type=data_obj.otp_type
+            auth_id=data_obj.auth_id,
+            otp=data_obj.token,
+            otp_type=data_obj.otp_type,
+            no_of_tries=no_of_tries + 1,
         )
         self._db.add(new_otp)
         self._db.commit()
@@ -38,6 +43,24 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
             raise InvalidRequest("OTP has expired")
         await self.delete(id=otp_query.id)
         return True
+
+    async def check_number_of_trials(self, auth_id):
+        otp_query = (
+            self._db.query(self.model)
+            .filter(self.model.auth_id == auth_id)
+            .order_by(desc(self.model.id))
+            .first()
+        )
+        return otp_query
+
+    async def delete_by_auth_id(self, auth_id):
+        otp_query = (
+            self._db.query(self.model)
+            .filter(self.model.auth_id == auth_id)
+            .delete(synchronize_session=False)
+        )
+        self._db.commit()
+        return
 
 
 crud_otp = CRUDOtp(db=get_db(), model=OTP)

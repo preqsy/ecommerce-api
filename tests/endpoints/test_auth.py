@@ -23,7 +23,7 @@ from tests.fixtures.auth_user_samples import (
     sample_login_user_wrong_email,
     sample_verify_auth_user,
 )
-from schemas.auth import RegisterAuthUserResponse
+from schemas.auth import ForgotPassword, RegisterAuthUserResponse
 
 
 crud_otp_verify_path = "endpoints.auth.crud_otp.verify_otp"
@@ -220,3 +220,46 @@ async def test_get_user_success(
     rsp = await client.get("/auth/me")
 
     assert rsp.status_code == status.HTTP_200_OK
+
+@pytest.mark.asyncio
+async def test_forget_password_success(client, database_override_dependencies):
+    await register_user(client)
+
+    rsp = await client.post(
+        "/auth/forget-password",
+        json={"email": "obbyprecious12@gmail.com"},
+        headers=sample_header(),
+    )
+    assert rsp.status_code == status.HTTP_200_OK
+    assert rsp.json() == {
+        "reset_password_link_sent": True,
+    }
+
+
+@pytest.mark.asyncio
+async def test_forget_password_many_requests(client, database_override_dependencies):
+    await register_user(client)
+    for _ in range(2):
+        rsp = await client.post(
+            "/auth/forget-password",
+            json={"email": "obbyprecious12@gmail.com"},
+            headers=sample_header(),
+        )
+        assert rsp.status_code == status.HTTP_200_OK
+    rsp = await client.post(
+        "/auth/forget-password",
+        json={"email": "obbyprecious12@gmail.com"},
+        headers=sample_header(),
+    )
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_forget_password_wrong_email(client, database_override_dependencies):
+
+    rsp = await client.post(
+        "/auth/forget-password",
+        json={"email": "obbyprecious12@gmail.com"},
+        headers=sample_header(),
+    )
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND

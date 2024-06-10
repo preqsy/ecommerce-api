@@ -117,6 +117,7 @@ class OTP(Base):
     otp = Column(String, nullable=False)
     otp_type = Column(String, nullable=False)
     active = Column(Boolean, default=True)
+    no_of_tries = Column(Integer)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     expires_on = Column(
         TIMESTAMP(timezone=True), server_default=text("now() + interval '14 days'")

@@ -1,0 +1,61 @@
+name: Build and Deploy Code
+
+on: push
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+
+    env:
+      SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}
+      TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:50610903@localhost:5432/ecommerce_test"
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ecommerce_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 50610903
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ecommerce_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          while ! pg_isready -h localhost -p 5432 -U postgres; do
+            sleep 1
+          done
+
+      - name: Set up databases
+        run: |
+          export PGPASSWORD=50610903
+          psql -h localhost -U postgres -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'ecommerce_test'" | grep -q 1 || psql -h localhost -U postgres -d postgres -c "CREATE DATABASE ecommerce_test;"
+          psql -h localhost -U postgres -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'ecommerce'" | grep -q 1 || psql -h localhost -U postgres -d postgres -c "CREATE DATABASE ecommerce;"
+
+      - name: Run tests
+        env:
+          TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:50610903@localhost:5432/ecommerce_test"
+        run: poetry run pytest

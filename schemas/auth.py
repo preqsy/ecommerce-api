@@ -47,10 +47,6 @@ class RegisterAuthUserResponse(BaseModel):
     tokens: Tokens
 
 
-class AuthUserUpdate(BaseModel):
-    email: EmailStr
-
-
 class VerifiedEmail(BaseModel):
     email_verified: bool
 
@@ -61,3 +57,30 @@ class LogoutResponse(BaseModel):
 
 class TokenDeactivate(BaseModel):
     access_token: str
+
+
+class EmailIn(BaseModel):
+    email: EmailStr
+
+
+class NewPassword(BaseModel):
+    PASSWORD: ClassVar[str] = "password"
+    password: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_password(cls, values):
+        password = values.get(cls.PASSWORD)
+        if not validate_password(password):
+            raise ValueError(
+                "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number or one special character"
+            )
+        return values
+
+
+class ForgotPassword(BaseModel):
+    reset_password_link_sent: bool = True
+
+
+class ResetPassword(BaseModel):
+    password_reset: bool = True

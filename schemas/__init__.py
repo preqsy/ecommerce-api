@@ -2,11 +2,14 @@
 from .auth import (
     AuthUserCreate,
     AuthUserResponse,
-    AuthUserUpdate,
     VerifiedEmail,
     LogoutResponse,
     TokenDeactivate,
     RegisterAuthUserResponse,
+    EmailIn,
+    NewPassword,
+    ForgotPassword,
+    ResetPassword,
 )
 
 from .customer import CustomerCreate, CustomerReturn

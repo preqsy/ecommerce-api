@@ -25,7 +25,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def get_by_auth_id(self, auth_id) -> ModelType:
         query_result = self._db.query(self.model).filter(self.model.auth_id == auth_id)
-        if not query_result:
+        if not query_result.first():
             return None
         return query_result, query_result.first()
 

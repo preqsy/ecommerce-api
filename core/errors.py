@@ -10,7 +10,10 @@ class DatabaseConnectionError(Exception):
 
 
 class MissingResources(HTTPException):
-    def __init__(self, message="Missing ID"):
+
+    def __init__(
+        self, message="Missing Resource: No such resource by that UUID, name, or email"
+    ):
         return super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=message)
 
 

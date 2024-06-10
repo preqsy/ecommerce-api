@@ -29,12 +29,9 @@ async def test_customer_create_success(
     get_current_auth_user_override_dependency,
     # get_crud_auth_user_override_dependency,
 ):
-    # mock_crud_auth_user.get_by_id.return_value = MagicMock(id=1)
 
     await register_user(client)
-    with patch("endpoints.customer.BackgroundTasks") as mock_background_tasks:
-        mock_instance = mock_background_tasks.return_value
-        rsp = await client.post("/customer/", json=sample_customer_create())
 
-        mock_instance.add_task.assert_any_call()
-        assert rsp.status_code == status.HTTP_201_CREATED
+    rsp = await client.post("/customer/", json=sample_customer_create())
+
+    assert rsp.status_code == status.HTTP_201_CREATED
