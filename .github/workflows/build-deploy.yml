@@ -16,13 +16,13 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: e-commerce_test
+          POSTGRES_DB: ecommerce_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: 50610903
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d commerce_test"
+          --health-cmd "pg_isready -U postgres -d ecommerce_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -52,9 +52,9 @@ jobs:
       - name: Set up test database
         run: |
           export PGPASSWORD=50610903
-          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE e-commerce_test;"
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE ecommerce_test;"
 
       - name: Test app
         env:
-          TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:50610903@localhost:5432/e-commerce_test"
+          TEST_SQLALCHEMY_DATABASE_URL: "postgresql://postgres:50610903@localhost:5432/ecommerce_test"
         run: poetry run pytest
