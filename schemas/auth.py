@@ -84,3 +84,7 @@ class ForgotPassword(BaseModel):
 
 class ResetPassword(BaseModel):
     password_reset: bool = True
+
+
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str

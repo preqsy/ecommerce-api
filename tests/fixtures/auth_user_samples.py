@@ -38,14 +38,14 @@ def sample_auth_user_query_result_first():
         AuthUser.DEFAULT_ROLE: "customer",
         AuthUser.CREATED_TIMESTAMP: datetime.utcnow(),
         AuthUser.UPDATED_TIMESTAMP: None,
-        AuthUser.PHONE_VERIFIED: True,
+        AuthUser.PHONE_VERIFIED: False,
         AuthUser.EMAIL_VERIFIED: True,
         AuthUser.PHONE_NUMBER: None,
         AuthUser.ID: 1,
         AuthUser.ROLE_ID: None,
         AuthUser.IS_SUPERUSER: False,
-        AuthUser.FIRST_NAME: "Obby",
-        AuthUser.LAST_NAME: "Precious",
+        AuthUser.FIRST_NAME: None,
+        AuthUser.LAST_NAME: None,
     }
 
 

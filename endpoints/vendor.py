@@ -30,7 +30,7 @@ async def create_vendor(
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ):
 
-    _, auth_user = crud_vendor.get_by_auth_id(current_user.id)
+    auth_user = crud_vendor.get_by_auth_id(current_user.id)
 
     if auth_user:
         raise ResourcesExist("Vendor exists")

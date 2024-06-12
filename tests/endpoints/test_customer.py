@@ -27,7 +27,6 @@ async def test_customer_create_success(
     client,
     database_override_dependencies,
     get_current_auth_user_override_dependency,
-    # get_crud_auth_user_override_dependency,
 ):
 
     await register_user(client)

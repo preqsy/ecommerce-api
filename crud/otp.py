@@ -28,7 +28,7 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
         return True
 
     async def verify_otp(self, token, auth_id, otp_type) -> bool:
-        _, otp_query = self.get_by_auth_id(auth_id)
+        otp_query = self.get_by_auth_id(auth_id)
         if otp_query is None or otp_query.otp != token:
             return None
         if otp_query.otp_type != otp_type:

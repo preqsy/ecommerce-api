@@ -10,6 +10,7 @@ from core.tokens import (
     deactivate_token,
     generate_tokens,
     get_current_auth_user,
+    regenerate_tokens,
     verify_access_token,
 )
 from crud.auth import CRUDAuthUser, get_crud_auth_user
@@ -28,6 +29,7 @@ from schemas import (
     EmailIn,
     ForgotPassword,
     ResetPassword,
+    RefreshTokenSchema,
 )
 from models.auth_user import OTP, AuthUser, RefreshToken
 from utils.email_validation import email_validate
@@ -187,3 +189,14 @@ def get_me(
 ):
 
     return current_user
+
+
+@router.post("/refresh-token")
+async def refresh_access_token(
+    token: RefreshTokenSchema,
+    current_user: AuthUser = Depends(get_current_auth_user),
+    user_agent: str = Header(None),
+):
+    return regenerate_tokens(
+        token=token.refresh_token, user_agent=user_agent, auth_id=current_user.id
+    )

@@ -10,6 +10,7 @@ from .auth import (
     NewPassword,
     ForgotPassword,
     ResetPassword,
+    RefreshTokenSchema,
 )
 
 from .customer import CustomerCreate, CustomerReturn
