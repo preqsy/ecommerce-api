@@ -120,3 +120,9 @@ def create_forget_password_token(auth_id, user_agent):
         payload={"user_id": auth_id, "user_agent": user_agent},
         expiry_time=timedelta(minutes=settings.FORGET_PASSWORD_EXPIRY_TIME),
     )
+
+
+def regenerate_tokens(token, user_agent, auth_id):
+    token = deactivate_token(token, auth_id=auth_id)
+
+    return generate_tokens(user_agent=user_agent, user_id=auth_id)

@@ -26,9 +26,7 @@ async def create_customer(
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ):
 
-    _, auth_user = crud_customer.get_by_auth_id(current_user.id)
-
-    print(auth_user)
+    auth_user = crud_customer.get_by_auth_id(current_user.id)
 
     if auth_user:
         raise ResourcesExist("customer exists")
@@ -44,7 +42,7 @@ async def create_customer(
         phone_number=data_obj.phone_number,
         role_id=customer.id,
     )
-    print(customer_auth_details)
+
     background_tasks.add_task(
         crud_auth_user.update, current_user.id, customer_auth_details
     )

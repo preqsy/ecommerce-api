@@ -50,8 +50,8 @@ def get_crud_customer_override_dependency():
 
 @pytest.fixture
 def get_current_auth_user_override_dependency():
-    app.dependency_overrides[get_current_auth_user] = lambda: AuthUser(
-        **sample_auth_user_query_result_first()
-    )
-    yield
+
+    auth_user = AuthUser(**sample_auth_user_query_result_first())
+    app.dependency_overrides[get_current_auth_user] = lambda: auth_user
+    yield auth_user
     app.dependency_overrides = {}
