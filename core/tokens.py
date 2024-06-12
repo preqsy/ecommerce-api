@@ -123,6 +123,6 @@ def create_forget_password_token(auth_id, user_agent):
 
 
 def regenerate_tokens(token, user_agent, auth_id):
-    token = deactivate_token(token, auth_id=auth_id)
+    token = deactivate_token(token)
 
     return generate_tokens(user_agent=user_agent, user_id=auth_id)
