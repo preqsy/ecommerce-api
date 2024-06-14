@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, Header, Query, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
-from core.db import get_db
 from core.errors import InvalidRequest, MissingResources, ResourcesExist
-from core.schema import Tokens
+from core.schema import RefreshTokenCreate, Tokens
 from core.tokens import (
     create_forget_password_token,
     deactivate_token,
@@ -13,9 +11,8 @@ from core.tokens import (
     regenerate_tokens,
     verify_access_token,
 )
-from crud.auth import CRUDAuthUser, get_crud_auth_user
+from crud import CRUDAuthUser, get_crud_auth_user, crud_refresh_token, crud_otp
 
-from crud.otp import crud_otp
 from schemas import (
     AuthUserCreate,
     AuthUserResponse,
@@ -31,7 +28,8 @@ from schemas import (
     ResetPassword,
     RefreshTokenSchema,
 )
-from models.auth_user import OTP, AuthUser, RefreshToken
+from models.auth_user import OTP, AuthUser
+from schemas.auth import ChangePassword
 from utils.email_validation import email_validate
 from utils.password_utils import hash_password, verify_password
 
@@ -46,7 +44,6 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 async def register_user(
     data_obj: AuthUserCreate,
     background_task: BackgroundTasks,
-    db: Session = Depends(get_db),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
     user_agent: str = Header(None),
 ):
@@ -61,13 +58,11 @@ async def register_user(
     otp_data_obj = OTPCreate(auth_id=new_user.id, otp_type=OTPType.EMAIL)
     background_task.add_task(crud_otp.create, otp_data_obj)
     tokens = generate_tokens(user_id=new_user.id, user_agent=user_agent)
-    refresh_token = RefreshToken(
-        refresh_token=tokens.refresh_token,
-        auth_id=new_user.id,
-        user_agent=user_agent,
+    token_obj = RefreshTokenCreate(
+        auth_id=new_user.id, refresh_token=tokens.refresh_token, user_agent=user_agent
     )
-    db.add(refresh_token)
-    db.commit()
+    await crud_refresh_token.create(data_obj=token_obj)
+
     new_user_dict = data_obj.model_dump()
     new_user_dict[AuthUserResponse.ID] = new_user.id
     return RegisterAuthUserResponse(auth_user=new_user_dict, tokens=tokens)
@@ -78,7 +73,6 @@ async def verify(
     data_obj: OTPCreate,
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ):
-    # TODO: check this for error
     crud_auth_user.get_or_raise_exception(id=data_obj.auth_id)
     otp_verify: OTP = await crud_otp.verify_otp(
         auth_id=data_obj.auth_id, token=data_obj.token, otp_type=data_obj.otp_type
@@ -86,12 +80,12 @@ async def verify(
     if not otp_verify:
         raise InvalidRequest("Invalid OTP")
     if data_obj.otp_type == OTPType.EMAIL:
-        await crud_auth_user.update_email_or_phone_status(
-            id=data_obj.auth_id, data_dict={AuthUser.EMAIL_VERIFIED: True}
+        await crud_auth_user.update(
+            id=data_obj.auth_id, data_obj={AuthUser.EMAIL_VERIFIED: True}
         )
     if data_obj.otp_type == OTPType.PHONE_NUMBER:
-        await crud_auth_user.update_email_or_phone_status(
-            id=data_obj.auth_id, data_dict={AuthUser.PHONE_VERIFIED: True}
+        await crud_auth_user.update(
+            id=data_obj.auth_id, data_obj={AuthUser.PHONE_VERIFIED: True}
         )
     return VerifiedEmail(email_verified=True)
 
@@ -101,7 +95,6 @@ async def login_user(
     data_obj: OAuth2PasswordRequestForm = Depends(),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
     user_agent: str = Header(None),
-    db: Session = Depends(get_db),
 ):
     user_query = crud_auth_user.get_by_email(email=data_obj.username.lower())
     if not user_query:
@@ -115,29 +108,25 @@ async def login_user(
     ):
         raise InvalidRequest("Incorrect Credentials")
     tokens = generate_tokens(user_id=user_query.id, user_agent=user_agent)
-    refresh_token = RefreshToken(
+    token_obj = RefreshTokenCreate(
         refresh_token=tokens.refresh_token,
         auth_id=user_query.id,
         user_agent=user_agent,
     )
-    db.add(refresh_token)
-    db.commit()
+    await crud_refresh_token.create(data_obj=token_obj)
     return tokens
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK, response_model=LogoutResponse)
-def logout_user(
+async def logout_user(
     token: TokenDeactivate,
     current_user: AuthUser = Depends(get_current_auth_user),
-    db: Session = Depends(get_db),
 ):
-    deactivate_token(token.access_token)
-    db.query(RefreshToken).filter(RefreshToken.auth_id == current_user.id).delete()
-    db.commit()
+    await deactivate_token(token.access_token, auth_id=current_user.id)
     return LogoutResponse(logout=True)
 
 
-@router.post("/forget-password", response_model=ForgotPassword)
+@router.put("/forget-password", response_model=ForgotPassword)
 async def forget_password(
     data_obj: EmailIn,
     background_task: BackgroundTasks,
@@ -200,3 +189,26 @@ async def refresh_access_token(
     return regenerate_tokens(
         token=token.refresh_token, user_agent=user_agent, auth_id=current_user.id
     )
+
+
+@router.post("/change-password")
+async def change_password(
+    data_obj: ChangePassword,
+    current_user: AuthUser = Depends(get_current_auth_user),
+    crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+):
+    if not verify_password(
+        plain_password=data_obj.old_password, hashed_password=current_user.password
+    ):
+        raise InvalidRequest("Wrong password")
+
+    if verify_password(
+        plain_password=data_obj.new_password, hashed_password=current_user.password
+    ):
+        raise InvalidRequest("Cannot change to old password")
+
+    await crud_auth_user.update(
+        id=current_user.id,
+        data_obj={AuthUser.PASSWORD: hash_password(data_obj.new_password)},
+    )
+    return True

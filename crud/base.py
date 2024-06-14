@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Dict, Generic, Type, TypeVar, Union
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -56,8 +56,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.commit()
         return True
 
-    async def update(self, id, data_obj: UpdateSchemaType) -> dict[str, Any]:
+    async def update(
+        self, id, data_obj: Union[UpdateSchemaType, dict]
+    ) -> Dict[str, Any]:
         query = self._get_query_by_id(id)
+        if isinstance(data_obj, dict):
+            data_obj["updated_timestamp"] = datetime.utcnow()
+            query.update(data_obj, synchronize_session=False)
+            self._db.commit()
+            return data_obj
         data_dict = data_obj.model_dump(exclude_unset=True)
         data_dict["updated_timestamp"] = datetime.utcnow()
         query.update(data_dict, synchronize_session=False)
@@ -71,3 +78,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if not username:
             return None
         return username.username
+
+    async def delete_by_auth_id(self, auth_id):
+        query = (
+            self._db.query(self.model)
+            .filter(self.model.auth_id == auth_id)
+            .delete(synchronize_session=False)
+        )
+        self._db.commit()
+        return

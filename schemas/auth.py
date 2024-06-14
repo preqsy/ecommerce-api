@@ -88,3 +88,20 @@ class ResetPassword(BaseModel):
 
 class RefreshTokenSchema(BaseModel):
     refresh_token: str
+
+
+class ChangePassword(BaseModel):
+    NEW_PASSWORD: ClassVar[str] = "new_password"
+
+    old_password: str
+    new_password: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_password(cls, values):
+        password = values.get(cls.NEW_PASSWORD)
+        if not validate_password(password):
+            raise ValueError(
+                "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number or one special character"
+            )
+        return values

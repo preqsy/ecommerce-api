@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter, Query, status
 
 from core.errors import InvalidRequest
 from core.tokens import get_current_verified_vendor
-from crud.product import CRUDProduct, get_crud_product
+from crud import CRUDProduct, get_crud_product
 from models.auth_user import AuthUser
 from schemas import ProductCreate, ProductReturn, ProductUpdate, ProductUpdateReturn
 from utils.generate_sku import generate_random_sku

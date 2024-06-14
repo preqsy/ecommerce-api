@@ -14,21 +14,21 @@ class MissingResources(HTTPException):
     def __init__(
         self, message="Missing Resource: No such resource by that UUID, name, or email"
     ):
-        return super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=message)
+        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=message)
 
 
 class ResourcesExist(HTTPException):
-    def __init__(self, message=""):
-        return super().__init__(status_code=status.HTTP_409_CONFLICT, detail=message)
+    def __init__(self, message="Resources with that ID, name or Email Exist"):
+        super().__init__(status_code=status.HTTP_409_CONFLICT, detail=message)
 
 
 class InvalidRequest(HTTPException):
-    def __init__(self, message=""):
-        return super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=message)
+    def __init__(self, message="Invalid Request"):
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=message)
 
 
 class CredentialException(HTTPException):
-    def __init__(self, detail: str = ""):
+    def __init__(self, detail: str = "Invalid Credentials"):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,
