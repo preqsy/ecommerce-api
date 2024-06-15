@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 from core import settings
 from core.db import get_db
 from core.errors import CredentialException, InvalidRequest
-from crud.auth import CRUDAuthUser, get_crud_auth_user
+from crud import CRUDAuthUser, get_crud_auth_user, crud_refresh_token
 from models.auth_user import AuthUser
 from schemas.base import Roles
 from .schema import Tokens, TokenData
@@ -22,12 +22,13 @@ BLACKLISTED_TOKEN = []
 lock = threading.Lock()
 
 
-def deactivate_token(token):
+async def deactivate_token(token, auth_id):
     if token in BLACKLISTED_TOKEN:
         raise InvalidRequest("Already Logged Out")
     verify_access_token(token)
     with lock:
         BLACKLISTED_TOKEN.append(token)
+        await crud_refresh_token.delete_by_auth_id(auth_id=auth_id)
 
 
 def is_token_blacklisted(token: str) -> bool:
@@ -122,7 +123,8 @@ def create_forget_password_token(auth_id, user_agent):
     )
 
 
-def regenerate_tokens(token, user_agent, auth_id):
-    token = deactivate_token(token)
+async def regenerate_tokens(token, user_agent, auth_id):
+
+    token = await deactivate_token(token, auth_id=auth_id)
 
     return generate_tokens(user_agent=user_agent, user_id=auth_id)

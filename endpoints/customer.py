@@ -2,9 +2,14 @@ from fastapi import APIRouter, Depends, status, BackgroundTasks
 
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
-from crud.auth import CRUDAuthUser, get_crud_auth_user
-from crud.otp import crud_otp
-from crud.customer import CRUDCustomer, get_crud_customer
+from crud import (
+    CRUDAuthUser,
+    get_crud_auth_user,
+    crud_otp,
+    CRUDCustomer,
+    get_crud_customer,
+)
+
 from models.auth_user import AuthUser
 from schemas import (
     CustomerCreate,

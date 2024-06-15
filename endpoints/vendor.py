@@ -2,9 +2,7 @@ from fastapi import APIRouter, Depends, status, BackgroundTasks
 
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
-from crud.auth import CRUDAuthUser, get_crud_auth_user
-from crud.vendor import CRUDVendor, get_crud_vendor
-from crud.otp import crud_otp
+from crud import CRUDAuthUser, CRUDVendor, get_crud_vendor, get_crud_auth_user, crud_otp
 from models.auth_user import AuthUser
 
 

@@ -3,8 +3,7 @@ import pytest
 
 from core.db import get_db
 from core.tokens import get_current_auth_user
-from crud.auth import get_crud_auth_user
-from crud.customer import get_crud_customer
+from crud import get_crud_auth_user, get_crud_customer
 from main import app
 from tests.fixtures.auth_user_samples import sample_auth_user_query_result_first
 from tests.fixtures.testdb import engine, mock_get_db

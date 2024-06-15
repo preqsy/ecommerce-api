@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
-from crud.auth import CRUDAuthUser
-from crud.customer import CRUDCustomer
+from crud import CRUDAuthUser, CRUDCustomer
 
 
 mock_crud_auth_user = MagicMock(spec=CRUDAuthUser)

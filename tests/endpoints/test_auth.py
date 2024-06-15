@@ -11,7 +11,7 @@ from crud.auth import get_crud_auth_user
 from main import app
 from tests.conftest import mock_crud_auth_user
 from models.auth_user import AuthUser
-from schemas.otp import OTPType
+from schemas import OTPType, RegisterAuthUserResponse
 from tests.fixtures.auth_user_samples import (
     sample_auth_user_create,
     sample_auth_user_invalid_password,
@@ -23,7 +23,6 @@ from tests.fixtures.auth_user_samples import (
     sample_login_user_wrong_email,
     sample_verify_auth_user,
 )
-from schemas.auth import ForgotPassword, RegisterAuthUserResponse
 
 
 crud_otp_verify_path = "endpoints.auth.crud_otp.verify_otp"
@@ -39,7 +38,7 @@ async def register_user(
     response = await client.post(
         "/auth/register",
         json=sample_register_details,
-        headers={"user_agent": "testing"},
+        headers=sample_header(),
     )
 
     return response
@@ -50,7 +49,10 @@ async def login_user_success(
     sample_user_return_value: dict[str, Any] = sample_auth_user_query_result_first(),
     login_details: dict[str, str] = sample_login_user(),
 ):
-    await register_user(client)
+    register_rsp = await register_user(client)
+    access_token = register_rsp.json()["tokens"]["access_token"]
+    headers = sample_header()
+    headers["authorization"] = "Bearer {}".format(access_token)
 
     app.dependency_overrides[get_crud_auth_user] = lambda: mock_crud_auth_user
 
@@ -59,9 +61,7 @@ async def login_user_success(
 
     with patch(verify_password_path) as mock_verify_password:
         mock_verify_password.return_value = True
-        response = await client.post(
-            "/auth/token", data=login_details, headers=sample_header()
-        )
+        response = await client.post("/auth/token", data=login_details, headers=headers)
 
     app.dependency_overrides = {}
     return response
@@ -115,6 +115,7 @@ async def test_verify_token_email_success(client, database_override_dependencies
             otp_type=OTPType.EMAIL,
         )
 
+        assert rsp.json() == {"verified": True}
         assert rsp.status_code == 200
 
 
@@ -221,6 +222,7 @@ async def test_get_user_success(
 
     assert rsp.status_code == status.HTTP_200_OK
 
+
 @pytest.mark.asyncio
 async def test_forget_password_success(client, database_override_dependencies):
     await register_user(client)
@@ -263,3 +265,89 @@ async def test_forget_password_wrong_email(client, database_override_dependencie
         headers=sample_header(),
     )
     assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_change_password_success(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+    await register_user(client)
+    rsp = await client.put(
+        "/auth/change-password",
+        json={"old_password": "2Strong", "new_password": "2Strongg"},
+    )
+
+    assert rsp.json() == {"password_changed": True}
+    assert rsp.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_change_password_wrong_old_password(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+    await register_user(client)
+    rsp = await client.put(
+        "/auth/change-password",
+        json={"old_password": "2Strongg", "new_password": "2Strongg"},
+    )
+
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_change_password_new_password_same_as_old_password(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+    await register_user(client)
+    rsp = await client.put(
+        "/auth/change-password",
+        json={"old_password": "2Strong", "new_password": "2Strong"},
+    )
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_change_password_wrong_new_password_format(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+
+    await register_user(client)
+
+    rsp = await client.put(
+        "/auth/change-password",
+        json={"old_password": "2Strong", "new_password": "2Str"},
+    )
+    assert rsp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio
+async def test_refresh_token_success(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+
+    register_rsp = await register_user(client)
+    refresh_token = register_rsp.json()["tokens"]["refresh_token"]
+
+    headers = sample_header()
+    rsp = await client.post(
+        "/auth/refresh-token",
+        json={"refresh_token": refresh_token},
+        headers=headers,
+    )
+    assert rsp.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_refresh_token_wrong_token(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
+
+    await register_user(client)
+
+    headers = sample_header()
+    rsp = await client.post(
+        "/auth/refresh-token",
+        json={"refresh_token": "refresh_token"},
+        headers=headers,
+    )
+    assert rsp.status_code == status.HTTP_400_BAD_REQUEST

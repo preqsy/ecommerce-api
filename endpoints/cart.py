@@ -4,7 +4,7 @@ from core.errors import InvalidRequest, MissingResources
 from core.tokens import (
     get_current_verified_customer,
 )
-from crud.product import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product
+from crud import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product
 from models import AuthUser
 from schemas import CartCreate, CartReturn, CartUpdate
 

@@ -53,15 +53,6 @@ class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
         )
         return otp_query
 
-    async def delete_by_auth_id(self, auth_id):
-        otp_query = (
-            self._db.query(self.model)
-            .filter(self.model.auth_id == auth_id)
-            .delete(synchronize_session=False)
-        )
-        self._db.commit()
-        return
-
 
 crud_otp = CRUDOtp(db=get_db(), model=OTP)
 
