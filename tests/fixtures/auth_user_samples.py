@@ -104,7 +104,7 @@ def sample_login_user_wrong_email():
 
 
 def sample_header():
-    return {"user-agent": "postman"}
+    return {"User-Agent": "PostmanRuntime/7.28.0"}
 
 
 def sample_access_token():

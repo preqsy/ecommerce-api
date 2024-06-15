@@ -19,7 +19,7 @@ from schemas import (
     LogoutResponse,
     RegisterAuthUserResponse,
     TokenDeactivate,
-    VerifiedEmail,
+    OtpVerified,
     OTPCreate,
     OTPType,
     NewPassword,
@@ -27,9 +27,10 @@ from schemas import (
     ForgotPassword,
     ResetPassword,
     RefreshTokenSchema,
+    ChangePassword,
+    PasswordChanged,
 )
 from models.auth_user import OTP, AuthUser
-from schemas.auth import ChangePassword
 from utils.email_validation import email_validate
 from utils.password_utils import hash_password, verify_password
 
@@ -68,7 +69,7 @@ async def register_user(
     return RegisterAuthUserResponse(auth_user=new_user_dict, tokens=tokens)
 
 
-@router.post("/verify", response_model=VerifiedEmail)
+@router.post("/verify", response_model=OtpVerified)
 async def verify(
     data_obj: OTPCreate,
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
@@ -87,7 +88,7 @@ async def verify(
         await crud_auth_user.update(
             id=data_obj.auth_id, data_obj={AuthUser.PHONE_VERIFIED: True}
         )
-    return VerifiedEmail(email_verified=True)
+    return OtpVerified(verified=True)
 
 
 @router.post("/token", status_code=status.HTTP_201_CREATED, response_model=Tokens)
@@ -126,7 +127,7 @@ async def logout_user(
     return LogoutResponse(logout=True)
 
 
-@router.put("/forget-password", response_model=ForgotPassword)
+@router.post("/forget-password", response_model=ForgotPassword)
 async def forget_password(
     data_obj: EmailIn,
     background_task: BackgroundTasks,
@@ -180,18 +181,19 @@ def get_me(
     return current_user
 
 
-@router.post("/refresh-token")
+@router.post("/refresh-token", response_model=Tokens)
 async def refresh_access_token(
     token: RefreshTokenSchema,
     current_user: AuthUser = Depends(get_current_auth_user),
     user_agent: str = Header(None),
 ):
-    return regenerate_tokens(
+
+    return await regenerate_tokens(
         token=token.refresh_token, user_agent=user_agent, auth_id=current_user.id
     )
 
 
-@router.post("/change-password")
+@router.put("/change-password", response_model=PasswordChanged)
 async def change_password(
     data_obj: ChangePassword,
     current_user: AuthUser = Depends(get_current_auth_user),
@@ -211,4 +213,4 @@ async def change_password(
         id=current_user.id,
         data_obj={AuthUser.PASSWORD: hash_password(data_obj.new_password)},
     )
-    return True
+    return PasswordChanged()

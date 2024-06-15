@@ -2,7 +2,7 @@
 from .auth import (
     AuthUserCreate,
     AuthUserResponse,
-    VerifiedEmail,
+    OtpVerified,
     LogoutResponse,
     TokenDeactivate,
     RegisterAuthUserResponse,
@@ -11,6 +11,8 @@ from .auth import (
     ForgotPassword,
     ResetPassword,
     RefreshTokenSchema,
+    ChangePassword,
+    PasswordChanged,
 )
 
 from .customer import CustomerCreate, CustomerReturn

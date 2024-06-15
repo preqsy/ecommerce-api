@@ -47,8 +47,8 @@ class RegisterAuthUserResponse(BaseModel):
     tokens: Tokens
 
 
-class VerifiedEmail(BaseModel):
-    email_verified: bool
+class OtpVerified(BaseModel):
+    verified: bool
 
 
 class LogoutResponse(BaseModel):
@@ -105,3 +105,7 @@ class ChangePassword(BaseModel):
                 "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number or one special character"
             )
         return values
+
+
+class PasswordChanged(BaseModel):
+    password_changed: bool = True
