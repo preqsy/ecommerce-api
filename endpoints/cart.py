@@ -33,6 +33,8 @@ async def create_cart(
 ):
     product = crud_product.get_or_raise_exception(data_obj.product_id)
     data_obj.customer_id = current_user.role_id
+    if data_obj.quantity > product.stock:
+        raise InvalidRequest(f"Stocks Available: {product.stock}")
     cart = await crud_cart.create(data_obj)
 
     return cart
@@ -84,7 +86,7 @@ async def get_cart_summary(
 
 
 @router.post("/checkout")
-async def place_order(
+async def checkout(
     data_obj: OrderCreate,
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
