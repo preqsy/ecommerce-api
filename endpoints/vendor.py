@@ -1,8 +1,9 @@
+from arq import ArqRedis
 from fastapi import APIRouter, Depends, status, BackgroundTasks
 
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
-from crud import CRUDAuthUser, CRUDVendor, get_crud_vendor, get_crud_auth_user, crud_otp
+from crud import CRUDVendor, get_crud_vendor, crud_otp
 from models.auth_user import AuthUser
 
 
@@ -14,6 +15,7 @@ from schemas import (
 )
 
 from schemas.base import RoleAuthDetailsUpdate, Roles
+from task_queue.main import get_queue_connection
 
 
 router = APIRouter(prefix="/vendor", tags=["Vendor"])
@@ -25,7 +27,7 @@ async def create_vendor(
     background_tasks: BackgroundTasks,
     current_user: AuthUser = Depends(get_current_auth_user),
     crud_vendor: CRUDVendor = Depends(get_crud_vendor),
-    crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    queue_connection: ArqRedis = Depends(get_queue_connection),
 ):
 
     auth_user = crud_vendor.get_by_auth_id(current_user.id)
@@ -44,8 +46,8 @@ async def create_vendor(
         phone_number=data_obj.phone_number,
         role_id=vendor.id,
     )
-    background_tasks.add_task(
-        crud_auth_user.update, current_user.id, vendor_auth_details
+    await queue_connection.enqueue_job(
+        "update_auth_details", current_user.id, vendor_auth_details
     )
     otp_data_obj = OTPCreate(auth_id=current_user.id, otp_type=OTPType.PHONE_NUMBER)
     background_tasks.add_task(crud_otp.create, otp_data_obj)

@@ -1,10 +1,9 @@
+from arq import ArqRedis
 from fastapi import APIRouter, Depends, status, BackgroundTasks
 
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
 from crud import (
-    CRUDAuthUser,
-    get_crud_auth_user,
     crud_otp,
     CRUDCustomer,
     get_crud_customer,
@@ -18,6 +17,7 @@ from schemas import (
     OTPType,
 )
 from schemas.base import RoleAuthDetailsUpdate, Roles
+from task_queue.main import get_queue_connection
 
 router = APIRouter(prefix="/customer", tags=["Customer"])
 
@@ -28,7 +28,7 @@ async def create_customer(
     background_tasks: BackgroundTasks,
     current_user: AuthUser = Depends(get_current_auth_user),
     crud_customer: CRUDCustomer = Depends(get_crud_customer),
-    crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    queue_connection: ArqRedis = Depends(get_queue_connection),
 ):
 
     auth_user = crud_customer.get_by_auth_id(current_user.id)
@@ -48,8 +48,8 @@ async def create_customer(
         role_id=customer.id,
     )
 
-    background_tasks.add_task(
-        crud_auth_user.update, current_user.id, customer_auth_details
+    await queue_connection.enqueue_job(
+        "update_auth_details", current_user.id, customer_auth_details
     )
     otp_data_obj = OTPCreate(auth_id=current_user.id, otp_type=OTPType.PHONE_NUMBER)
     background_tasks.add_task(crud_otp.create, otp_data_obj)

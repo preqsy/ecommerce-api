@@ -89,7 +89,6 @@ async def place_order(
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
     crud_order: CRUDOrder = Depends(get_crud_order),
-    crud_vendor: CRUDVendor = Depends(get_crud_vendor),
     crud_customer: CRUDCustomer = Depends(get_crud_customer),
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
