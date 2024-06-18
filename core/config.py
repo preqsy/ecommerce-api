@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRY_TIME: int = 20
     REFRESH_TOKEN_EXPIRY_TIME: int = 30
     FORGET_PASSWORD_EXPIRY_TIME: int = 5
+    STRIPE_PUBLISHABLE_KEY: str
+    STRIPE_SECRET_KEY: str
 
     class Config:
         env_path = env_path

@@ -1471,6 +1471,21 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
+name = "stripe"
+version = "9.11.0"
+description = "Python bindings for the Stripe API"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "stripe-9.11.0-py2.py3-none-any.whl", hash = "sha256:be246986861dcb2fdd9ecf91157b3a60e2c506dae48395e892058f6f2a182f86"},
+    {file = "stripe-9.11.0.tar.gz", hash = "sha256:e37198f1933ca5dd34912c8f18bc3756322c4253bfeaa522aeb38de1b3356f9a"},
+]
+
+[package.dependencies]
+requests = {version = ">=2.20", markers = "python_version >= \"3.0\""}
+typing-extensions = {version = ">=4.5.0", markers = "python_version >= \"3.7\""}
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -1861,4 +1876,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2be3355a8a3fd434f0bbc98708c2093629d1e55e7a13b3661197a4d4e3ee3017"
+content-hash = "4a649763e94aaa7702ff6146e815c0a171ffc77ea70169471928f4615aef8fe1"

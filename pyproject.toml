@@ -19,6 +19,7 @@ trio = "^0.25.1"
 pytest-freezegun = "^0.4.2"
 pyjwt = "^2.8.0"
 requests = "^2.32.3"
+stripe = "^9.11.0"
 
 
 [build-system]

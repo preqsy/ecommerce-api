@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import Any, ClassVar, List, Optional
+from typing import ClassVar, List, Optional
 from typing_extensions import Annotated
 from pydantic import AnyHttpUrl, BaseModel, Field, StringConstraints
 
-from models.cart import Cart
-from schemas.base import ProductCategory, ReturnBaseModel
+from schemas.base import PaymentType, ProductCategory, ReturnBaseModel
 from schemas.customer import CustomerReturn
 
 
@@ -77,6 +76,26 @@ class CartReturn(ReturnBaseModel):
 
 
 class CartTotalAmount(CartReturn):
-    # cart: list
     cart_items: List[CartReturn]
     total_amount: float
+
+
+class CartSummary(BaseModel):
+    total_items_quantity: int
+    total_amount: int
+    cart_items: List[CartReturn]
+
+
+class CartUpdateReturn(BaseModel):
+    quantity: int
+    updated_timestamp: datetime
+
+
+class OrderCreate(BaseModel):
+    payment_type: PaymentType
+    shipping_address: Optional[str] = None
+    additional_note: Optional[str] = None
+    contact_information: Optional[str] = None
+    customer_id: Optional[int] = None
+    vendor_ids: Optional[list] = []
+    total_amount: Optional[int] = None

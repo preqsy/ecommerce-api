@@ -56,3 +56,9 @@ class ProductCategory(str, Enum):
     FURNITURE = "furniture"
     ART = "art"
     GAMES = "games"
+
+
+class PaymentType(str, Enum):
+    CASH = "Cash"
+    BANK_TRANSFER = "Bank_Transfer"
+    CARD = "Card"
