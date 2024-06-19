@@ -1,12 +1,23 @@
 from fastapi import APIRouter, Depends, status
 
-from core.errors import InvalidRequest, MissingResources
+from core.errors import InvalidRequest
+from core.stripe_payment import create_checkout_session
 from core.tokens import (
     get_current_verified_customer,
 )
-from crud import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product
+from crud import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product, get_crud_order
+from crud.customer import CRUDCustomer, get_crud_customer
+from crud.product import CRUDOrder
 from models import AuthUser
-from schemas import CartCreate, CartReturn, CartUpdate
+from schemas import (
+    CartCreate,
+    CartReturn,
+    CartUpdate,
+    CartUpdateReturn,
+    CartSummary,
+    OrderCreate,
+)
+from schemas.base import PaymentType
 
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
@@ -21,29 +32,14 @@ async def create_cart(
 ):
     product = crud_product.get_or_raise_exception(data_obj.product_id)
     data_obj.customer_id = current_user.role_id
+    if data_obj.quantity > product.stock:
+        raise InvalidRequest(f"Stocks Available: {product.stock}")
     cart = await crud_cart.create(data_obj)
 
     return cart
 
 
-@router.get("/carts")
-def get_carts(
-    current_user: AuthUser = Depends(get_current_verified_customer),
-    crud_cart: CRUDCart = Depends(get_crud_cart),
-):
-    cart_items = crud_cart.get_cart_items(current_user.role_id)
-    total_amount = 0.0
-    if not cart_items:
-        raise MissingResources("No items in cart")
-    for item in cart_items:
-        amount = item.quantity * item.product.price
-        total_amount = total_amount + amount
-    # TODO: Add a response model
-    cart_details = {"cart_items": cart_items, "total_amount": total_amount}
-    return cart_details
-
-
-@router.put("/{id}")
+@router.put("/{id}", response_model=CartUpdateReturn)
 async def update_cart(
     id: int,
     data_obj: CartUpdate,
@@ -79,22 +75,50 @@ async def clear_cart(
     await crud_cart.delete_cart(current_user.role_id)
 
 
-@router.get("/summary")
-def get_cart_summary(
+@router.get("/summary", response_model=CartSummary)
+async def get_cart_summary(
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
 ):
-    cart_items = crud_cart.get_cart_items(current_user.role_id)
-    if not cart_items:
-        raise MissingResources("No items in cart")
+    cart_summary = await crud_cart.get_cart_summary(customer_id=current_user.role_id)
+    return cart_summary
 
-    total_amount = sum(item.quantity * item.product.price for item in cart_items)
-    total_items = sum(item.quantity for item in cart_items)
 
-    summary = {
-        "total_items": total_items,
-        "total_amount": total_amount,
-        "items": cart_items,
-    }
+@router.post("/checkout")
+async def checkout(
+    data_obj: OrderCreate,
+    current_user: AuthUser = Depends(get_current_verified_customer),
+    crud_cart: CRUDCart = Depends(get_crud_cart),
+    crud_order: CRUDOrder = Depends(get_crud_order),
+    crud_customer: CRUDCustomer = Depends(get_crud_customer),
+):
+    customer = crud_customer.get_or_raise_exception(current_user.role_id)
 
-    return summary
+    cart_summary = await crud_cart.get_cart_summary(customer_id=current_user.role_id)
+
+    products = [products.product for products in cart_summary["cart_items"]]
+
+    products_iter = iter(products)
+    for product in cart_summary["cart_items"]:
+        product_stock = next(products_iter).stock
+        if product.quantity > product_stock:
+            raise InvalidRequest(
+                f"{product.product.product_name} has: {product_stock} stocks left"
+            )
+    if not data_obj.shipping_address:
+        data_obj.shipping_address = (
+            f"{customer.address} {customer.state} {customer.country}"
+        )
+    if not data_obj.contact_information:
+        data_obj.contact_information = customer.phone_number
+
+    data_obj.vendor_ids = [product.vendor_id for product in products]
+    data_obj.customer_id = current_user.role_id
+    data_obj.total_amount = cart_summary["total_amount"]
+
+    new_order = await crud_order.create(data_obj)
+
+    if data_obj.payment_type == PaymentType.CARD:
+        await create_checkout_session(quantity=int(cart_summary["total_amount"]))
+
+    return new_order

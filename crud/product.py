@@ -3,11 +3,12 @@ from fastapi import Depends
 from sqlalchemy import desc
 
 from core.db import get_db
+from core.errors import MissingResources
 from crud.base import CRUDBase
-from models.cart import Cart
+from models.cart import Cart, Order
 from models.product import Product
 from schemas import ProductCreate
-from schemas.product import CartCreate, ProductUpdate
+from schemas.product import CartCreate, OrderCreate, ProductUpdate
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
@@ -78,6 +79,36 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartCreate]):
         cart_query.delete(synchronize_session=False)
         self._db.commit()
         return
+
+    async def get_cart_summary(
+        self,
+        customer_id: int,
+    ):
+        cart_items = self.get_cart_items(customer_id)
+        if not cart_items:
+            raise MissingResources("No items in cart")
+
+        total_amount = sum(item.quantity * item.product.price for item in cart_items)
+        total_items_quantity = sum(item.quantity for item in cart_items)
+
+        summary = {
+            "total_items_quantity": total_items_quantity,
+            "total_amount": total_amount,
+            "cart_items": cart_items,
+        }
+
+        return summary
+
+
+class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
+    pass
+
+
+crud_order = CRUDOrder(db=get_db(), model=Order)
+
+
+def get_crud_order(db=Depends(get_db)) -> CRUDOrder:
+    return CRUDOrder(db=db, model=Order)
 
 
 def get_crud_product(db=Depends(get_db)) -> CRUDProduct:
