@@ -8,7 +8,7 @@ from crud.base import CRUDBase
 from models.cart import Cart, Order
 from models.product import Product
 from schemas import ProductCreate
-from schemas.product import CartCreate, OrderCreate, ProductUpdate
+from schemas import CartCreate, OrderCreate, ProductUpdate
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
