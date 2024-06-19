@@ -3,12 +3,11 @@ from fastapi import Depends
 from sqlalchemy import desc
 
 from core.db import get_db
-from core.errors import MissingResources
 from crud.base import CRUDBase
-from models.cart import Cart, Order
+from models.cart import Order
 from models.product import Product
 from schemas import ProductCreate
-from schemas import CartCreate, OrderCreate, ProductUpdate
+from schemas import OrderCreate, ProductUpdate
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
@@ -63,63 +62,6 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         return product_query
 
 
-class CRUDCart(CRUDBase[Cart, CartCreate, CartCreate]):
-    def get_cart_items(self, customer_id) -> Union[List, None]:
-        cart_details = (
-            self._db.query(self.model)
-            .filter(self.model.customer_id == customer_id)
-            .all()
-        )
-        if not cart_details:
-            return None
-        return cart_details
-
-    async def delete_cart(self, id) -> bool:
-        cart_query = self._db.query(self.model).filter(self.model.customer_id == id)
-        cart_query.delete(synchronize_session=False)
-        self._db.commit()
-        return
-
-    async def get_cart_summary(
-        self,
-        customer_id: int,
-    ):
-        cart_items = self.get_cart_items(customer_id)
-        if not cart_items:
-            raise MissingResources("No items in cart")
-
-        total_amount = sum(item.quantity * item.product.price for item in cart_items)
-        total_items_quantity = sum(item.quantity for item in cart_items)
-
-        summary = {
-            "total_items_quantity": total_items_quantity,
-            "total_amount": total_amount,
-            "cart_items": cart_items,
-        }
-
-        return summary
-
-    def get_by_product_id(self, product_id: int) -> Cart:
-        query_result = (
-            self._db.query(self.model)
-            .filter(self.model.product_id == product_id)
-            .first()
-        )
-        if not query_result:
-            return None
-        return query_result
-
-    def get_by_customer_id(self, customer_id: int) -> Cart:
-        query_result = (
-            self._db.query(self.model)
-            .filter(self.model.customer_id == customer_id)
-            .first()
-        )
-        if not query_result:
-            return None
-        return query_result
-
-
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
     pass
 
@@ -133,7 +75,3 @@ def get_crud_order(db=Depends(get_db)) -> CRUDOrder:
 
 def get_crud_product(db=Depends(get_db)) -> CRUDProduct:
     return CRUDProduct(db=db, model=Product)
-
-
-def get_crud_cart(db=Depends(get_db)) -> CRUDCart:
-    return CRUDCart(db=db, model=Cart)

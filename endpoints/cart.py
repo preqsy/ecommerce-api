@@ -6,9 +6,16 @@ from core.stripe_payment import create_checkout_session
 from core.tokens import (
     get_current_verified_customer,
 )
-from crud import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product, get_crud_order
-from crud.customer import CRUDCustomer, get_crud_customer
-from crud.product import CRUDOrder
+from crud import (
+    CRUDCart,
+    CRUDProduct,
+    get_crud_cart,
+    get_crud_product,
+    get_crud_order,
+    CRUDOrder,
+    CRUDCustomer,
+    get_crud_customer
+)
 from models import AuthUser
 from schemas import (
     CartCreate,
@@ -43,31 +50,41 @@ async def create_cart(
     return cart
 
 
-@router.put("/{id}", response_model=CartUpdateReturn)
+@router.put("/", response_model=CartUpdateReturn)
 async def update_cart(
-    id: int,
     data_obj: CartUpdate,
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
+    crud_product: CRUDProduct = Depends(get_crud_product),
 ):
-    cart_item = crud_cart.get_or_raise_exception(id)
-    if cart_item.customer_id != current_user.role_id:
-        InvalidRequest("Can't update cart")
-    updated_cart = await crud_cart.update(id=id, data_obj=data_obj)
+    await crud_cart.check_if_product_id_exist_in_cart(
+        customer_id=current_user.role_id, product_id=data_obj.product_id
+    )
+
+    products = crud_product.get_or_raise_exception(data_obj.product_id)
+
+    if data_obj.quantity > products.stock:
+        raise InvalidRequest(f"{products.stock} item stock Left")
+    updated_cart = await crud_cart.update_cart_by_customer_id(
+        customer_id=current_user.role_id,
+        data_obj=data_obj,
+        product_id=data_obj.product_id,
+    )
 
     return updated_cart
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_cart_item(
-    id: int,
+    product_id: int,
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
 ):
-    cart_item = crud_cart.get_or_raise_exception(id)
-    if cart_item.customer_id != current_user.role_id:
-        InvalidRequest("Can't update cart")
-    await crud_cart.delete(id)
+    await crud_cart.check_if_product_id_exist_in_cart(
+        customer_id=current_user.role_id, product_id=product_id
+    )
+
+    await crud_cart.delete_cart_item_by_product_id(product_id=product_id)
 
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)

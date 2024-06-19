@@ -7,7 +7,7 @@ from httpx import AsyncClient
 
 from core.errors import InvalidRequest
 from core.tokens import get_current_auth_user, verify_access_token
-from crud.auth import get_crud_auth_user
+from crud import get_crud_auth_user
 from main import app
 from tests.conftest import mock_crud_auth_user
 from models.auth_user import AuthUser

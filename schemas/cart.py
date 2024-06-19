@@ -15,8 +15,8 @@ class CartCreate(BaseModel):
 
 
 class CartUpdate(BaseModel):
-
-    quantity: int = Field(default=1)
+    product_id: int
+    quantity: int
 
 
 class CartReturn(ReturnBaseModel):
@@ -40,6 +40,7 @@ class CartSummary(BaseModel):
 
 
 class CartUpdateReturn(BaseModel):
+    product_id: int
     quantity: int
     updated_timestamp: datetime
 

@@ -2,13 +2,17 @@ from httpx import AsyncClient
 from arq import create_pool
 from arq.connections import RedisSettings
 
-from crud.customer import get_crud_customer
-from crud.otp import get_crud_otp
-from crud.product import get_crud_cart, get_crud_order, get_crud_product
-from crud.vendor import get_crud_vendor
+from crud import (
+    get_crud_customer,
+    get_crud_otp,
+    get_crud_cart,
+    get_crud_order,
+    get_crud_product,
+    get_crud_vendor,
+    get_crud_auth_user,
+)
 from task_queue.tasks import registered_tasks
 from core.db import get_db
-from crud.auth import get_crud_auth_user
 
 
 REDIS_SETTINGS = RedisSettings()
