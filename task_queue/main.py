@@ -2,7 +2,10 @@ from httpx import AsyncClient
 from arq import create_pool
 from arq.connections import RedisSettings
 
+from crud.customer import get_crud_customer
 from crud.otp import get_crud_otp
+from crud.product import get_crud_cart, get_crud_order, get_crud_product
+from crud.vendor import get_crud_vendor
 from task_queue.tasks import registered_tasks
 from core.db import get_db
 from crud.auth import get_crud_auth_user
@@ -20,6 +23,11 @@ async def startup(ctx):
     ctx["session"] = AsyncClient()
     ctx["crud_auth_user"] = get_crud_auth_user(db)
     ctx["crud_otp"] = get_crud_otp(db)
+    ctx["crud_product"] = get_crud_product(db)
+    ctx["crud_customer"] = get_crud_customer(db)
+    ctx["crud_vendor"] = get_crud_vendor(db)
+    ctx["crud_cart"] = get_crud_cart(db)
+    ctx["crud_order"] = get_crud_order(db)
 
 
 async def shutdown(ctx):

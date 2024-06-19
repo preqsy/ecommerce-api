@@ -99,6 +99,26 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartCreate]):
 
         return summary
 
+    def get_by_product_id(self, product_id: int) -> Cart:
+        query_result = (
+            self._db.query(self.model)
+            .filter(self.model.product_id == product_id)
+            .first()
+        )
+        if not query_result:
+            return None
+        return query_result
+
+    def get_by_customer_id(self, customer_id: int) -> Cart:
+        query_result = (
+            self._db.query(self.model)
+            .filter(self.model.customer_id == customer_id)
+            .first()
+        )
+        if not query_result:
+            return None
+        return query_result
+
 
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
     pass

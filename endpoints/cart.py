@@ -1,3 +1,4 @@
+from arq import ArqRedis
 from fastapi import APIRouter, Depends, status
 
 from core.errors import InvalidRequest
@@ -18,6 +19,7 @@ from schemas import (
     OrderCreate,
 )
 from schemas.base import PaymentType
+from task_queue.main import get_queue_connection
 
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
@@ -31,6 +33,8 @@ async def create_cart(
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
     product = crud_product.get_or_raise_exception(data_obj.product_id)
+    if crud_cart.get_by_product_id(product_id=data_obj.product_id):
+        raise InvalidRequest("Already add item to cart")
     data_obj.customer_id = current_user.role_id
     if data_obj.quantity > product.stock:
         raise InvalidRequest(f"Stocks Available: {product.stock}")
@@ -91,6 +95,7 @@ async def checkout(
     crud_cart: CRUDCart = Depends(get_crud_cart),
     crud_order: CRUDOrder = Depends(get_crud_order),
     crud_customer: CRUDCustomer = Depends(get_crud_customer),
+    queue_connection: ArqRedis = Depends(get_queue_connection),
 ):
     customer = crud_customer.get_or_raise_exception(current_user.role_id)
 
@@ -98,13 +103,17 @@ async def checkout(
 
     products = [products.product for products in cart_summary["cart_items"]]
 
+    product_ids = [product.id for product in products]
+
     products_iter = iter(products)
+    products_quantities = []
     for product in cart_summary["cart_items"]:
         product_stock = next(products_iter).stock
         if product.quantity > product_stock:
             raise InvalidRequest(
                 f"{product.product.product_name} has: {product_stock} stocks left"
             )
+        products_quantities.append(product_stock - product.quantity)
     if not data_obj.shipping_address:
         data_obj.shipping_address = (
             f"{customer.address} {customer.state} {customer.country}"
@@ -112,7 +121,8 @@ async def checkout(
     if not data_obj.contact_information:
         data_obj.contact_information = customer.phone_number
 
-    data_obj.vendor_ids = [product.vendor_id for product in products]
+    vendor_ids = [product.vendor_id for product in products]
+    data_obj.vendor_ids = list(set(vendor_ids))
     data_obj.customer_id = current_user.role_id
     data_obj.total_amount = cart_summary["total_amount"]
 
@@ -120,5 +130,9 @@ async def checkout(
 
     if data_obj.payment_type == PaymentType.CARD:
         await create_checkout_session(quantity=int(cart_summary["total_amount"]))
+
+    await queue_connection.enqueue_job(
+        "update_stock_after_checkout", product_ids, products_quantities
+    )
 
     return new_order
