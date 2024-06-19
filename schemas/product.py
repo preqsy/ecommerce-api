@@ -70,7 +70,7 @@ class CartReturn(ReturnBaseModel):
     product_id: int
     quantity: int
     customer_id: int
-    total_amount: Optional[int] = None
+    total_amount: Optional[float] = None
     product: ProductReturn
     customer: CustomerReturn
 
@@ -82,7 +82,7 @@ class CartTotalAmount(CartReturn):
 
 class CartSummary(BaseModel):
     total_items_quantity: int
-    total_amount: int
+    total_amount: float
     cart_items: List[CartReturn]
 
 
@@ -98,4 +98,4 @@ class OrderCreate(BaseModel):
     contact_information: Optional[str] = None
     customer_id: Optional[int] = None
     vendor_ids: Optional[list] = []
-    total_amount: Optional[int] = None
+    total_amount: Optional[float] = None

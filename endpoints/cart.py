@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
-from core.errors import InvalidRequest, MissingResources
+from core.errors import InvalidRequest
 from core.stripe_payment import create_checkout_session
 from core.tokens import (
     get_current_verified_customer,
@@ -8,7 +8,6 @@ from core.tokens import (
 from crud import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product, get_crud_order
 from crud.customer import CRUDCustomer, get_crud_customer
 from crud.product import CRUDOrder
-from crud.vendor import CRUDVendor, get_crud_vendor
 from models import AuthUser
 from schemas import (
     CartCreate,
@@ -92,15 +91,20 @@ async def checkout(
     crud_cart: CRUDCart = Depends(get_crud_cart),
     crud_order: CRUDOrder = Depends(get_crud_order),
     crud_customer: CRUDCustomer = Depends(get_crud_customer),
-    crud_product: CRUDProduct = Depends(get_crud_product),
 ):
     customer = crud_customer.get_or_raise_exception(current_user.role_id)
 
     cart_summary = await crud_cart.get_cart_summary(customer_id=current_user.role_id)
 
-    product_ids = [items.product_id for items in cart_summary["cart_items"]]
-    products = [crud_product.get_or_raise_exception(id=id) for id in product_ids]
+    products = [products.product for products in cart_summary["cart_items"]]
 
+    products_iter = iter(products)
+    for product in cart_summary["cart_items"]:
+        product_stock = next(products_iter).stock
+        if product.quantity > product_stock:
+            raise InvalidRequest(
+                f"{product.product.product_name} has: {product_stock} stocks left"
+            )
     if not data_obj.shipping_address:
         data_obj.shipping_address = (
             f"{customer.address} {customer.state} {customer.country}"
