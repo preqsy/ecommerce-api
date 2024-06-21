@@ -9,16 +9,16 @@ from tests.fixtures.auth_user_samples import (
     sample_header,
 )
 from tests.fixtures.customer_samples import (
-    sample_customer_create,
+    sample_vendor_create,
 )
 from tests.mock_dependencies import mock_queue_connection
 
 
-async def create_customer(
+async def create_vendor(
     client: AsyncClient,
     database_override_dependencies,
-    sample_customer_create_details: dict = sample_customer_create(),
-    sample_register_details: dict = sample_auth_user_create_customer(),
+    sample_vendor_create_details: dict = sample_vendor_create(),
+    sample_register_details: dict = sample_auth_user_create_vendor(),
 ):
 
     login_rsp = await login_user(
@@ -30,33 +30,32 @@ async def create_customer(
     headers["authorization"] = "Bearer {}".format(access_token)
 
     rsp = await client.post(
-        "/customer/", json=sample_customer_create_details, headers=headers
+        "/vendor/", json=sample_vendor_create_details, headers=headers
     )
-    mock_queue_connection.enqueue_job.assert_called_once()
 
     return rsp
 
 
 @pytest.mark.asyncio
-async def test_customer_create_success(
+async def test_vendor_create_success(
     client,
     database_override_dependencies,
 ):
-    rsp = await create_customer(client, database_override_dependencies)
+    rsp = await create_vendor(client, database_override_dependencies)
 
     assert rsp.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.asyncio
-async def test_customer_create_with_a_vendor_as_default_role(
+async def test_vendor_create_with_a_cusomer_as_default_role(
     client,
     database_override_dependencies,
 ):
 
-    rsp = await create_customer(
+    rsp = await create_vendor(
         client,
         database_override_dependencies,
-        sample_register_details=sample_auth_user_create_vendor(),
+        sample_register_details=sample_auth_user_create_customer(),
     )
 
     assert rsp.status_code == status.HTTP_403_FORBIDDEN
@@ -64,32 +63,32 @@ async def test_customer_create_with_a_vendor_as_default_role(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field", ["first_name", "last_name", "username"])
-async def test_customer_create_short_names(
-    client, database_override_dependencies, field
-):
+async def test_vendor_create_short_names(client, database_override_dependencies, field):
 
-    sample_customer_create_dict = sample_customer_create()
+    sample_vendor_create_dict = sample_vendor_create()
     # Testing if the endpoint will allow first, last and username to be less than 2 cause it can't be less than 3 characters
-    sample_customer_create_dict[field] = sample_customer_create_dict[field][0:2]
+    sample_vendor_create_dict[field] = sample_vendor_create_dict[field][0:2]
 
-    rsp = await create_customer(
+    rsp = await create_vendor(
         client=client,
         database_override_dependencies=database_override_dependencies,
-        sample_customer_create_details=sample_customer_create_dict,
+        sample_vendor_create_details=sample_vendor_create_dict,
     )
     assert rsp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-@pytest.mark.parametrize("field", ["phone_number", "country", "address", "state"])
+@pytest.mark.parametrize(
+    "field", ["phone_number", "country", "address", "state", "bio"]
+)
 @pytest.mark.asyncio
-async def test_customer_create_missing_details(
+async def test_vendor_create_missing_details(
     client, database_override_dependencies, field
 ):
-    # Testing if the endpoint will allow me to create a customer account without a phone number, country, address and state
-    sample_customer_create_dict = sample_customer_create().pop(field)
-    rsp = await create_customer(
+    # Testing if the endpoint will allow me to create a vendor account without a phone number, country, address, bio and state
+    sample_vendor_create_dict = sample_vendor_create().pop(field)
+    rsp = await create_vendor(
         client=client,
         database_override_dependencies=database_override_dependencies,
-        sample_customer_create_details=sample_customer_create_dict,
+        sample_vendor_create_details=sample_vendor_create_dict,
     )
     assert rsp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

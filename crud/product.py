@@ -26,9 +26,9 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .order_by(desc(self.model.created_timestamp))
             .offset(skip)
             .limit(limit)
-        )
+        ).all()
 
-        return product_query
+        return product_query if product_query else None
 
     def get_products_for_vendor(
         self, vendor_id: int, search: str | None, skip=0, limit=10

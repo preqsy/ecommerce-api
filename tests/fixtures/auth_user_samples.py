@@ -1,13 +1,20 @@
 from datetime import datetime
 
-from unittest.mock import ANY
 
 from models.auth_user import AuthUser
 from schemas.otp import OTPType
 from utils.password_utils import pwd_context
 
 
-def sample_auth_user_create():
+def sample_auth_user_create_customer():
+    return {
+        AuthUser.EMAIL: "obbyprecious12@gmail.com",
+        AuthUser.PASSWORD: "2Strong",
+        AuthUser.DEFAULT_ROLE: "customer",
+    }
+
+
+def sample_auth_user_create_vendor():
     return {
         AuthUser.EMAIL: "obbyprecious12@gmail.com",
         AuthUser.PASSWORD: "2Strong",
@@ -35,55 +42,17 @@ def sample_auth_user_query_result_first():
     return {
         AuthUser.EMAIL: "obbyprecious12@gmail.com",
         AuthUser.PASSWORD: pwd_context.hash("2Strong"),
-        AuthUser.DEFAULT_ROLE: "customer",
+        AuthUser.DEFAULT_ROLE: "vendor",
         AuthUser.CREATED_TIMESTAMP: datetime.utcnow(),
         AuthUser.UPDATED_TIMESTAMP: None,
-        AuthUser.PHONE_VERIFIED: False,
+        AuthUser.PHONE_VERIFIED: True,
         AuthUser.EMAIL_VERIFIED: True,
         AuthUser.PHONE_NUMBER: None,
         AuthUser.ID: 1,
-        AuthUser.ROLE_ID: None,
+        AuthUser.ROLE_ID: 1,
         AuthUser.IS_SUPERUSER: False,
         AuthUser.FIRST_NAME: None,
         AuthUser.LAST_NAME: None,
-    }
-
-
-def sample_auth_user_query_result_unverfied_email():
-    return {
-        AuthUser.EMAIL: "obbyprecious12@gmail.com",
-        AuthUser.PASSWORD: pwd_context.hash("2Strong"),
-        AuthUser.PHONE_VERIFIED: True,
-        AuthUser.EMAIL_VERIFIED: False,
-        AuthUser.ID: 1,
-    }
-
-
-def sample_auth_user_query_result_no_email():
-    return {
-        AuthUser.EMAIL: None,
-        AuthUser.PASSWORD: pwd_context.hash("2Strong"),
-        AuthUser.PHONE_VERIFIED: True,
-        AuthUser.EMAIL_VERIFIED: True,
-        AuthUser.ID: 1,
-    }
-
-
-def sample_auth_user_login_():
-    return {
-        AuthUser.EMAIL: "obbyprecious12@gmail.com",
-        # AuthUser.PASSWORD: "2Strong",
-        AuthUser.DEFAULT_ROLE: "customer",
-        AuthUser.CREATED_TIMESTAMP: datetime.utcnow(),
-        AuthUser.UPDATED_TIMESTAMP: None,
-        AuthUser.PHONE_VERIFIED: True,
-        AuthUser.EMAIL_VERIFIED: True,
-        AuthUser.PHONE_NUMBER: None,
-        AuthUser.ID: ANY,
-        AuthUser.ROLE_ID: ANY,
-        AuthUser.IS_SUPERUSER: False,
-        AuthUser.FIRST_NAME: "Obinna",
-        AuthUser.LAST_NAME: "Obinna",
     }
 
 
@@ -104,9 +73,7 @@ def sample_login_user_wrong_email():
 
 
 def sample_header():
-    return {"User-Agent": "PostmanRuntime/7.28.0"}
-
-
-def sample_access_token():
-
-    return {"access_token": "banana"}
+    return {
+        "user-agent": "PostmanRuntime/7.28.0",
+        "host": "127.0.0.1",
+    }
