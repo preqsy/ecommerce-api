@@ -7,6 +7,7 @@ from crud import get_crud_auth_user, get_crud_customer
 from main import app
 from task_queue.main import get_queue_connection
 from tests.fixtures.auth_user_samples import sample_auth_user_query_result_first
+from tests.fixtures.samples import sample_get_verified_vendor
 from tests.fixtures.testdb import engine, mock_get_db
 from models import auth_user, product, cart as cartmodel, AuthUser
 from .mock_dependencies import (
@@ -64,7 +65,7 @@ def get_current_auth_user_override_dependency():
 @pytest.fixture
 def get_current_verified_vendor_override_dependency():
 
-    auth_user = AuthUser(**sample_auth_user_query_result_first())
+    auth_user = AuthUser(**sample_get_verified_vendor())
     app.dependency_overrides[get_current_verified_vendor] = lambda: auth_user
     yield auth_user
     app.dependency_overrides = {}

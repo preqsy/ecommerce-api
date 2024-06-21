@@ -13,7 +13,7 @@ from tests.fixtures.auth_user_samples import (
     sample_auth_user_invalid_password,
     sample_auth_user_wrong_email,
     sample_header,
-    sample_login_user,
+    sample_login_user_customer,
     sample_login_user_wrong_email,
     sample_verify_auth_user,
 )
@@ -62,7 +62,7 @@ async def register_and_verify_email(
 async def login_user(
     client: AsyncClient,
     sample_register_details: dict = sample_auth_user_create_customer(),
-    login_details: dict[str, str] = sample_login_user(),
+    login_details: dict[str, str] = sample_login_user_customer(),
 ):
     register_rsp = await register_and_verify_email(client, sample_register_details)
     access_token = register_rsp.json()["tokens"]["access_token"]
@@ -166,7 +166,9 @@ async def test_login_unverified_email(
     headers = sample_header()
     headers["authorization"] = "Bearer {}".format(access_token)
 
-    rsp = await client.post("/auth/token", data=sample_login_user(), headers=headers)
+    rsp = await client.post(
+        "/auth/token", data=sample_login_user_customer(), headers=headers
+    )
 
     assert rsp.status_code == status.HTTP_403_FORBIDDEN
 

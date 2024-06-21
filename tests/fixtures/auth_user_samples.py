@@ -16,7 +16,7 @@ def sample_auth_user_create_customer():
 
 def sample_auth_user_create_vendor():
     return {
-        AuthUser.EMAIL: "obbyprecious12@gmail.com",
+        AuthUser.EMAIL: "obbyprecious10@gmail.com",
         AuthUser.PASSWORD: "2Strong",
         AuthUser.DEFAULT_ROLE: "vendor",
     }
@@ -40,7 +40,7 @@ def sample_auth_user_invalid_password():
 
 def sample_auth_user_query_result_first():
     return {
-        AuthUser.EMAIL: "obbyprecious12@gmail.com",
+        AuthUser.EMAIL: "obbyprecious10@gmail.com",
         AuthUser.PASSWORD: pwd_context.hash("2Strong"),
         AuthUser.DEFAULT_ROLE: "vendor",
         AuthUser.CREATED_TIMESTAMP: datetime.utcnow(),
@@ -64,8 +64,12 @@ def sample_verify_auth_user():
     }
 
 
-def sample_login_user():
+def sample_login_user_customer():
     return {"username": "obbyprecious12@gmail.com", "password": "2Strong"}
+
+
+def sample_login_user_vendor():
+    return {"username": "obbyprecious10@gmail.com", "password": "2Strong"}
 
 
 def sample_login_user_wrong_email():

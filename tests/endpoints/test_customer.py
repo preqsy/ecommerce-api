@@ -8,7 +8,7 @@ from tests.fixtures.auth_user_samples import (
     sample_auth_user_create_vendor,
     sample_header,
 )
-from tests.fixtures.customer_samples import (
+from tests.fixtures.samples import (
     sample_customer_create,
 )
 from tests.mock_dependencies import mock_queue_connection
@@ -52,11 +52,13 @@ async def test_customer_create_with_a_vendor_as_default_role(
     client,
     database_override_dependencies,
 ):
+    register_details = sample_auth_user_create_vendor()
+    register_details["email"] = "obbyprecious12@gmail.com"
 
     rsp = await create_customer(
         client,
         database_override_dependencies,
-        sample_register_details=sample_auth_user_create_vendor(),
+        sample_register_details=register_details,
     )
 
     assert rsp.status_code == status.HTTP_403_FORBIDDEN
