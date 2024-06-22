@@ -24,10 +24,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return query_result
 
     def get_by_auth_id(self, auth_id) -> ModelType:
-        query_result = self._db.query(self.model).filter(self.model.auth_id == auth_id)
-        if not query_result.first():
+        query_result = (
+            self._db.query(self.model).filter(self.model.auth_id == auth_id).first()
+        )
+        if not query_result:
             return None
-        return query_result.first()
+        return query_result
 
     def _get_query_by_id(self, id):
         query_result = self._db.query(self.model).filter(self.model.id == id)
@@ -43,12 +45,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.refresh(rsp_result)
 
         return rsp_result
-
-    async def get_username(self, id: str) -> bool:
-        query_result = self._db.query(self.model).filter(self.model.id == id).first()
-        if not query_result:
-            return None
-        return True
 
     async def delete(self, id) -> bool:
         query = self._get_query_by_id(id)

@@ -1,5 +1,4 @@
-from crud.auth import CRUDAuthUser
-from crud.otp import CRUDOtp
+from crud import CRUDAuthUser, CRUDOtp
 from models.auth_user import AuthUser
 from utils.password_utils import hash_password
 

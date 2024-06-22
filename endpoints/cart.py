@@ -1,3 +1,4 @@
+from arq import ArqRedis
 from fastapi import APIRouter, Depends, status
 
 from core.errors import InvalidRequest
@@ -5,9 +6,16 @@ from core.stripe_payment import create_checkout_session
 from core.tokens import (
     get_current_verified_customer,
 )
-from crud import CRUDCart, CRUDProduct, get_crud_cart, get_crud_product, get_crud_order
-from crud.customer import CRUDCustomer, get_crud_customer
-from crud.product import CRUDOrder
+from crud import (
+    CRUDCart,
+    CRUDProduct,
+    get_crud_cart,
+    get_crud_product,
+    get_crud_order,
+    CRUDOrder,
+    CRUDCustomer,
+    get_crud_customer
+)
 from models import AuthUser
 from schemas import (
     CartCreate,
@@ -18,6 +26,7 @@ from schemas import (
     OrderCreate,
 )
 from schemas.base import PaymentType
+from task_queue.main import get_queue_connection
 
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
@@ -31,6 +40,8 @@ async def create_cart(
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
     product = crud_product.get_or_raise_exception(data_obj.product_id)
+    if crud_cart.get_by_product_id(product_id=data_obj.product_id):
+        raise InvalidRequest("Already add item to cart")
     data_obj.customer_id = current_user.role_id
     if data_obj.quantity > product.stock:
         raise InvalidRequest(f"Stocks Available: {product.stock}")
@@ -39,31 +50,41 @@ async def create_cart(
     return cart
 
 
-@router.put("/{id}", response_model=CartUpdateReturn)
+@router.put("/", response_model=CartUpdateReturn)
 async def update_cart(
-    id: int,
     data_obj: CartUpdate,
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
+    crud_product: CRUDProduct = Depends(get_crud_product),
 ):
-    cart_item = crud_cart.get_or_raise_exception(id)
-    if cart_item.customer_id != current_user.role_id:
-        InvalidRequest("Can't update cart")
-    updated_cart = await crud_cart.update(id=id, data_obj=data_obj)
+    await crud_cart.check_if_product_id_exist_in_cart(
+        customer_id=current_user.role_id, product_id=data_obj.product_id
+    )
+
+    products = crud_product.get_or_raise_exception(data_obj.product_id)
+
+    if data_obj.quantity > products.stock:
+        raise InvalidRequest(f"{products.stock} item stock Left")
+    updated_cart = await crud_cart.update_cart_by_customer_id(
+        customer_id=current_user.role_id,
+        data_obj=data_obj,
+        product_id=data_obj.product_id,
+    )
 
     return updated_cart
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_cart_item(
-    id: int,
+    product_id: int,
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
 ):
-    cart_item = crud_cart.get_or_raise_exception(id)
-    if cart_item.customer_id != current_user.role_id:
-        InvalidRequest("Can't update cart")
-    await crud_cart.delete(id)
+    await crud_cart.check_if_product_id_exist_in_cart(
+        customer_id=current_user.role_id, product_id=product_id
+    )
+
+    await crud_cart.delete_cart_item_by_product_id(product_id=product_id)
 
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
@@ -91,6 +112,7 @@ async def checkout(
     crud_cart: CRUDCart = Depends(get_crud_cart),
     crud_order: CRUDOrder = Depends(get_crud_order),
     crud_customer: CRUDCustomer = Depends(get_crud_customer),
+    queue_connection: ArqRedis = Depends(get_queue_connection),
 ):
     customer = crud_customer.get_or_raise_exception(current_user.role_id)
 
@@ -98,13 +120,17 @@ async def checkout(
 
     products = [products.product for products in cart_summary["cart_items"]]
 
+    product_ids = [product.id for product in products]
+
     products_iter = iter(products)
+    products_quantities = []
     for product in cart_summary["cart_items"]:
         product_stock = next(products_iter).stock
         if product.quantity > product_stock:
             raise InvalidRequest(
                 f"{product.product.product_name} has: {product_stock} stocks left"
             )
+        products_quantities.append(product_stock - product.quantity)
     if not data_obj.shipping_address:
         data_obj.shipping_address = (
             f"{customer.address} {customer.state} {customer.country}"
@@ -112,7 +138,8 @@ async def checkout(
     if not data_obj.contact_information:
         data_obj.contact_information = customer.phone_number
 
-    data_obj.vendor_ids = [product.vendor_id for product in products]
+    vendor_ids = [product.vendor_id for product in products]
+    data_obj.vendor_ids = list(set(vendor_ids))
     data_obj.customer_id = current_user.role_id
     data_obj.total_amount = cart_summary["total_amount"]
 
@@ -120,5 +147,9 @@ async def checkout(
 
     if data_obj.payment_type == PaymentType.CARD:
         await create_checkout_session(quantity=int(cart_summary["total_amount"]))
+
+    await queue_connection.enqueue_job(
+        "update_stock_after_checkout", product_ids, products_quantities
+    )
 
     return new_order

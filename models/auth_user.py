@@ -14,7 +14,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from core.db import Base
 
-from models.cart import Cart
 
 
 class AuthUser(Base):

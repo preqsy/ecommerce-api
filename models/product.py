@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import ClassVar
 
 from core.db import Base
 from sqlalchemy import (
@@ -15,11 +16,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-# from models.cart import Cart
-
 
 class Product(Base):
     __tablename__ = "products"
+    
+    STOCK: ClassVar[str] = "stock"
+    
     id = Column(Integer, primary_key=True, nullable=False)
     vendor_id = Column(
         ForeignKey(column="vendors.id", ondelete="CASCADE", onupdate="CASCADE"),

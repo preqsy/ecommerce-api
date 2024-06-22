@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import ClassVar, List, Optional
+from typing import ClassVar, Optional
 from typing_extensions import Annotated
 from pydantic import AnyHttpUrl, BaseModel, Field, StringConstraints
 
-from schemas.base import PaymentType, ProductCategory, ReturnBaseModel
-from schemas.customer import CustomerReturn
+from schemas.base import ProductCategory, ReturnBaseModel
 
 
 class ProductCreate(BaseModel):
@@ -52,50 +51,3 @@ class ProductUpdate(BaseModel):
 class ProductUpdateReturn(ProductUpdate):
     created_timestamp: Optional[datetime] = None
     updated_timestamp: Optional[datetime] = None
-
-
-class CartCreate(BaseModel):
-    product_id: int
-    customer_id: Optional[int] = None
-    session: Optional[int] = None
-    quantity: int = Field(default=1)
-
-
-class CartUpdate(BaseModel):
-
-    quantity: int = Field(default=1)
-
-
-class CartReturn(ReturnBaseModel):
-    product_id: int
-    quantity: int
-    customer_id: int
-    total_amount: Optional[float] = None
-    product: ProductReturn
-    customer: CustomerReturn
-
-
-class CartTotalAmount(CartReturn):
-    cart_items: List[CartReturn]
-    total_amount: float
-
-
-class CartSummary(BaseModel):
-    total_items_quantity: int
-    total_amount: float
-    cart_items: List[CartReturn]
-
-
-class CartUpdateReturn(BaseModel):
-    quantity: int
-    updated_timestamp: datetime
-
-
-class OrderCreate(BaseModel):
-    payment_type: PaymentType
-    shipping_address: Optional[str] = None
-    additional_note: Optional[str] = None
-    contact_information: Optional[str] = None
-    customer_id: Optional[int] = None
-    vendor_ids: Optional[list] = []
-    total_amount: Optional[float] = None

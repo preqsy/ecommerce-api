@@ -1,6 +1,6 @@
 from fastapi import Depends, APIRouter, Query, status
 
-from core.errors import InvalidRequest
+from core.errors import InvalidRequest, MissingResources
 from core.tokens import get_current_verified_vendor
 from crud import CRUDProduct, get_crud_product
 from models.auth_user import AuthUser
@@ -16,6 +16,7 @@ async def create_product(
     current_user: AuthUser = Depends(get_current_verified_vendor),
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
+
     data_obj.vendor_id = current_user.role_id
     data_obj.sku = generate_random_sku(data_obj.category[0:4])
     data_obj.product_image = str(data_obj.product_image)
@@ -30,13 +31,13 @@ def get_products_customer(
         default="", max_length=20, description="Search products with name or category"
     ),
     skip: int = Query(default=0),
-    limit: int = Query(default=10),
+    limit: int = Query(default=20),
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
-    product = crud_product.get_products(search=search, skip=skip, limit=limit)
-    if product == []:
-        return "No Products"
-    return product
+    products = crud_product.get_products(search=search, skip=skip, limit=limit)
+    if not products:
+        raise MissingResources("No Products")
+    return products
 
 
 @router.get("/me", response_model=list[ProductReturn])

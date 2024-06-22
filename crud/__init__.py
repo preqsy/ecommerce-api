@@ -10,10 +10,5 @@ from .auth import (
 )
 from .customer import CRUDCustomer, get_crud_customer
 from .vendor import CRUDVendor, get_crud_vendor
-from .product import (
-    CRUDCart,
-    CRUDProduct,
-    get_crud_cart,
-    get_crud_product,
-    get_crud_order,
-)
+from .product import *
+from .cart import *
