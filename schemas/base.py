@@ -37,7 +37,7 @@ class Roles(str, Enum):
     VENDOR = "vendor"
 
 
-class ProductCategory(str, Enum):
+class ProductCategoryEnum(str, Enum):
     ELECTRONICS = "electronics"
     FASHION = "fashion"
     HOME = "home"

@@ -51,21 +51,21 @@ def sample_vendor_create():
 
 def sample_product_create():
     return {
-        "product_name": "Ps5",
-        "product_image": "http://www.sample.org/head",
-        "category": "fashion",
-        "short_description": "Cool Game",
+        "product_name": "Gown",
+        "product_images": ["http://www.test.org/testhead"],
+        "category": "home",
+        "short_description": "Cool Gown",
         "product_status": True,
         "long_description": "Nice Wrist Watch",
         "stock": 2,
-        "price": 300,
+        "price": 2000,
     }
 
 
 def sample_product_create_second():
     return {
         "product_name": "Macbook",
-        "product_image": "http://www.sample.org/head",
+        "product_images": ["http://www.test.org/tehead"],
         "category": "pets",
         "short_description": "Cool Game",
         "product_status": True,
@@ -78,7 +78,7 @@ def sample_product_create_second():
 def sample_product_create_third():
     return {
         "product_name": "Iphone",
-        "product_image": "http://www.sample.org/head",
+        "product_images": ["http://www.sampletest.org/head"],
         "category": "home",
         "short_description": "Cool Game",
         "product_status": True,
@@ -91,10 +91,18 @@ def sample_product_create_third():
 def sample_product_update():
     return {
         "product_name": "On God",
-        # "product_image": "http://www.sample.org/head",
-        "category": "fashion",
-        # "short_description": "Cool Game",
-        # "long_description": "Nice Wrist Watch",
+        "short_description": "Cool Game",
+        "long_description": "Nice Wrist Watch",
         "stock": 2,
         "price": 300,
     }
+
+
+def sample_product_image_update():
+    return {
+        "product_image": "http://www.sampleimagetest.org/head",
+    }
+
+
+def sample_product_image():
+    return {"product_image": "http://www.sampleimagetest.org/head", "product_id": 1}

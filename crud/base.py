@@ -20,7 +20,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_or_raise_exception(self, id: int) -> ModelType:
         query_result = self._db.query(self.model).filter(self.model.id == id).first()
         if not query_result:
-            raise MissingResources("ID not found")
+            raise MissingResources
         return query_result
 
     def get_by_auth_id(self, auth_id) -> ModelType:
@@ -37,7 +37,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             raise MissingResources("Item with ID doesn't exist")
         return query_result
 
-    async def create(self, data_obj: CreateSchemaType) -> ModelType:
+    async def create(self, data_obj: Union[CreateSchemaType, dict]) -> ModelType:
+        if isinstance(data_obj, dict):
+            rsp_result = self.model(**data_obj)
+            self._db.add(rsp_result)
+            self._db.commit()
+            self._db.refresh(rsp_result)
+            return rsp_result
+
         data_dict = data_obj.model_dump(exclude_none=True)
         rsp_result = self.model(**data_dict)
         self._db.add(rsp_result)

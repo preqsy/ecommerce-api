@@ -3,7 +3,25 @@ from typing import ClassVar, Optional
 from typing_extensions import Annotated
 from pydantic import AnyHttpUrl, BaseModel, Field, StringConstraints
 
-from schemas.base import ProductCategory, ReturnBaseModel
+from schemas.base import ProductCategoryEnum, ReturnBaseModel
+
+
+class ProductImageCreate(BaseModel):
+    product_image: str
+    product_id: int
+
+
+class ProductCategoryCreate(BaseModel):
+    category_name: ProductCategoryEnum
+
+
+class ProductImageReturn(ReturnBaseModel):
+    product_image: str
+    product_id: int
+
+
+class ProductCategoryReturn(ReturnBaseModel):
+    category_name: ProductCategoryEnum
 
 
 class ProductCreate(BaseModel):
@@ -11,8 +29,9 @@ class ProductCreate(BaseModel):
 
     vendor_id: Optional[int] = None
     product_name: str
-    product_image: AnyHttpUrl
-    category: ProductCategory
+    product_images: list[AnyHttpUrl]
+    category: ProductCategoryEnum
+    product_category_id: Optional[int] = None
     short_description: Annotated[str, StringConstraints(max_length=50)]
     sku: Optional[str] = None
     product_status: bool = True
@@ -26,26 +45,34 @@ class ProductReturn(ReturnBaseModel):
 
     vendor_id: int
     product_name: str
-    product_image: AnyHttpUrl
-    category: str
+    product_category_id: str
     short_description: str
     sku: str
     product_status: bool
     long_description: str
     stock: int
     price: float
+    product_category_id: Optional[int] = None
+    product_images: list[ProductImageReturn]
+    category: ProductCategoryReturn
 
 
 class ProductUpdate(BaseModel):
     product_name: Optional[str] = None
-    product_image: Optional[AnyHttpUrl] = None
-    category: Optional[str] = None
     short_description: Optional[str] = None
     sku: Optional[str] = None
     product_status: Optional[bool] = None
     long_description: Optional[str] = None
     stock: Optional[int] = None
     price: Optional[float] = None
+
+
+class ProductImageUpdate(BaseModel):
+    product_image: AnyHttpUrl
+
+
+class ProductImageUpdateReturn(ProductImageUpdate):
+    updated_timestamp: datetime
 
 
 class ProductUpdateReturn(ProductUpdate):

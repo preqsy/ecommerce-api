@@ -14,7 +14,7 @@ from crud import (
     get_crud_order,
     CRUDOrder,
     CRUDCustomer,
-    get_crud_customer
+    get_crud_customer,
 )
 from models import AuthUser
 from schemas import (
