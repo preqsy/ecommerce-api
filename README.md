@@ -23,6 +23,7 @@ This project is an e-commerce API designed to manage user carts, including addin
 - **Poetry**: For dependency management.
 - **Git**: For version control.
 - **Asynchronous Programming**: For enhancing API performance with FastAPI.
+- **Redis**: For Caching and Background Tasks
 
 ## Getting Started
 
