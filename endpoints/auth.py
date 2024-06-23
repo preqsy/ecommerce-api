@@ -30,7 +30,7 @@ from schemas import (
     ChangePassword,
     PasswordChanged,
 )
-from models.auth_user import OTP, AuthUser
+from models import OTP, AuthUser
 from utils.email_validation import email_validate
 from utils.password_utils import hash_password, verify_password
 

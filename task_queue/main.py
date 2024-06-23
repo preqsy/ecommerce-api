@@ -11,6 +11,7 @@ from crud import (
     get_crud_vendor,
     get_crud_auth_user,
 )
+from crud.product import get_crud_product_image
 from task_queue.tasks import registered_tasks
 from core.db import get_db
 
@@ -32,6 +33,7 @@ async def startup(ctx):
     ctx["crud_vendor"] = get_crud_vendor(db)
     ctx["crud_cart"] = get_crud_cart(db)
     ctx["crud_order"] = get_crud_order(db)
+    ctx["crud_product_image"] = get_crud_product_image(db)
 
 
 async def shutdown(ctx):

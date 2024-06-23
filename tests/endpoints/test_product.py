@@ -3,14 +3,18 @@ from httpx import AsyncClient
 import pytest
 from fastapi import status
 
+from models.product import ProductImage
 from schemas.product import ProductReturn
 from tests.endpoints.test_vendor import create_vendor
-from tests.fixtures.samples import (
+from tests.sample_datas.samples import (
     sample_product_create,
     sample_product_create_second,
     sample_product_create_third,
+    sample_product_image,
+    sample_product_image_update,
     sample_product_update,
 )
+from tests.mock_dependencies import mock_crud_product_image
 
 
 async def create_product(
@@ -46,7 +50,7 @@ async def test_create_product(
     "field",
     [
         "product_name",
-        "product_image",
+        "product_images",
         "category",
         "short_description",
         "long_description",
@@ -239,6 +243,23 @@ async def test_update_product_invalid_product_id(
         get_current_verified_vendor_override_dependency,
     )
     rsp = await client.put("/products/5", json=sample_product_update())
+
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_update_product_image_invalid_product_image_id(
+    client,
+    database_override_dependencies,
+    get_current_verified_vendor_override_dependency,
+):
+
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_vendor_override_dependency,
+    )
+    rsp = await client.put("/products/image/5", json=sample_product_image_update())
 
     assert rsp.status_code == status.HTTP_404_NOT_FOUND
 
