@@ -54,7 +54,6 @@ async def create_product(
     await queue_connection.enqueue_job(
         "save_product_images", product.id, product_images
     )
-
     return product
 
 
@@ -116,11 +115,21 @@ async def update_product(
     data_obj: ProductUpdate,
     current_user: AuthUser = Depends(get_current_verified_vendor),
     crud_product: CRUDProduct = Depends(get_crud_product),
+    crud_product_category: CRUDProductCategory = Depends(get_crud_product_category),
 ):
 
     product = crud_product.get_or_raise_exception(id)
     if product.vendor_id != current_user.role_id:
         raise InvalidRequest("Product doesn't belong to you")
+
+    if data_obj.category:
+        data_obj.sku = generate_random_sku(data_obj.category[0:4])
+        prod_cat = await crud_product_category.create(
+            data_obj={"category_name": data_obj.category}
+        )
+        data_obj.product_category_id = prod_cat.id
+
+    del data_obj.category
 
     updated_product = await crud_product.update(id=id, data_obj=data_obj)
 

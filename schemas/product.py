@@ -60,11 +60,13 @@ class ProductReturn(ReturnBaseModel):
 class ProductUpdate(BaseModel):
     product_name: Optional[str] = None
     short_description: Optional[str] = None
+    category: Optional[ProductCategoryEnum] = None
     sku: Optional[str] = None
     product_status: Optional[bool] = None
     long_description: Optional[str] = None
     stock: Optional[int] = None
     price: Optional[float] = None
+    product_category_id: Optional[int] = None
 
 
 class ProductImageUpdate(BaseModel):

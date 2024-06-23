@@ -3,7 +3,8 @@ from httpx import AsyncClient
 import pytest
 from fastapi import status
 
-from schemas.product import ProductReturn, ProductImageCreate
+from models.product import ProductImage
+from schemas.product import ProductReturn
 from tests.endpoints.test_vendor import create_vendor
 from tests.fixtures.samples import (
     sample_product_create,
@@ -37,14 +38,15 @@ async def test_update_product_image_success(
     get_crud_product_image_override_dependency,
 ):
     # TODO: Create a product image for this test
-    await create_product(
+    sample_product_images = ProductImage(**sample_product_image())
+    mock_crud_product_image.get_or_raise_exception.return_value = sample_product_images
+    pr_rsp = await create_product(
         client,
         database_override_dependencies,
         get_current_verified_vendor_override_dependency,
     )
-    mock_crud_product_image.get_or_raise_exception.return_value = ProductImageCreate(
-        **sample_product_image()
-    )
+    print(pr_rsp.json())
+
     rsp = await client.put("/products/image/1", json=sample_product_image_update())
 
     assert rsp.status_code == status.HTTP_200_OK
