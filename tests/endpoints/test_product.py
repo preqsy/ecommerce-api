@@ -31,28 +31,6 @@ async def create_product(
 
 
 @pytest.mark.asyncio
-async def test_update_product_image_success(
-    client,
-    database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
-    get_crud_product_image_override_dependency,
-):
-    # TODO: Create a product image for this test
-    sample_product_images = ProductImage(**sample_product_image())
-    mock_crud_product_image.get_or_raise_exception.return_value = sample_product_images
-    pr_rsp = await create_product(
-        client,
-        database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
-    )
-    print(pr_rsp.json())
-
-    rsp = await client.put("/products/image/1", json=sample_product_image_update())
-
-    assert rsp.status_code == status.HTTP_200_OK
-
-
-@pytest.mark.asyncio
 async def test_create_product(
     client: AsyncClient,
     database_override_dependencies,
@@ -318,3 +296,25 @@ async def test_delete_product_invalid_id(
     rsp = await client.delete("/products/10")
 
     assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_update_product_image_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_vendor_override_dependency,
+    get_crud_product_image_override_dependency,
+):
+    # TODO: Create a product image for this test
+    sample_product_images = ProductImage(**sample_product_image())
+    mock_crud_product_image.get_or_raise_exception.return_value = sample_product_images
+    pr_rsp = await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_vendor_override_dependency,
+    )
+    print(pr_rsp.json())
+
+    rsp = await client.put("/products/image/1", json=sample_product_image_update())
+
+    assert rsp.status_code == status.HTTP_200_OK

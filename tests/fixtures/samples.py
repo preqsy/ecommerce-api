@@ -95,6 +95,7 @@ def sample_product_update():
         "long_description": "Nice Wrist Watch",
         "stock": 2,
         "price": 300,
+        "category": "pets",
     }
 
 
