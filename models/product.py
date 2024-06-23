@@ -54,11 +54,10 @@ class ProductCategory(Base):
     CATEGORY_NAME: ClassVar[str] = "category_name"
     id = Column(Integer, primary_key=True, nullable=False)
     category_name = Column(String, nullable=False, index=True)
-
-    products = relationship(Product, back_populates="category")
-
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)
+
+    products = relationship(Product, back_populates="category")
 
 
 class ProductImage(Base):
