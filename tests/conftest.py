@@ -6,9 +6,9 @@ from core.tokens import get_current_auth_user, get_current_verified_vendor
 from crud import get_crud_auth_user, get_crud_customer, get_crud_product_image
 from main import app
 from task_queue.main import get_queue_connection
-from tests.fixtures.auth_user_samples import sample_auth_user_query_result_first
-from tests.fixtures.samples import sample_get_verified_vendor
-from tests.fixtures.testdb import engine, mock_get_db
+from tests.sample_datas.auth_user_samples import sample_auth_user_query_result_first
+from tests.sample_datas.samples import sample_get_verified_vendor
+from tests.sample_datas.testdb import engine, mock_get_db
 from models import auth_user, product, cart as cartmodel, AuthUser
 from .mock_dependencies import (
     mock_crud_auth_user,

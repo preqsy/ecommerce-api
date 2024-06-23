@@ -62,3 +62,20 @@ class PaymentType(str, Enum):
     CASH = "Cash"
     BANK_TRANSFER = "Bank_Transfer"
     CARD = "Card"
+
+
+class ProductOptionalBase(BaseModel):
+    sku: Optional[str] = None
+    product_category_id: Optional[int] = None
+
+
+class CustomerVendorReturnBase(ReturnBaseModel):
+    first_name: str
+    last_name: str
+    username: str
+    phone_number: str
+    auth_id: Optional[int] = None
+    country: str
+    state: str
+    address: str
+    is_superuser: Optional[bool] = None

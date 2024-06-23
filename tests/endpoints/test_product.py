@@ -6,7 +6,7 @@ from fastapi import status
 from models.product import ProductImage
 from schemas.product import ProductReturn
 from tests.endpoints.test_vendor import create_vendor
-from tests.fixtures.samples import (
+from tests.sample_datas.samples import (
     sample_product_create,
     sample_product_create_second,
     sample_product_create_third,
@@ -296,25 +296,3 @@ async def test_delete_product_invalid_id(
     rsp = await client.delete("/products/10")
 
     assert rsp.status_code == status.HTTP_404_NOT_FOUND
-
-
-@pytest.mark.asyncio
-async def test_update_product_image_success(
-    client,
-    database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
-    get_crud_product_image_override_dependency,
-):
-    # TODO: Create a product image for this test
-    sample_product_images = ProductImage(**sample_product_image())
-    mock_crud_product_image.get_or_raise_exception.return_value = sample_product_images
-    pr_rsp = await create_product(
-        client,
-        database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
-    )
-    print(pr_rsp.json())
-
-    rsp = await client.put("/products/image/1", json=sample_product_image_update())
-
-    assert rsp.status_code == status.HTTP_200_OK

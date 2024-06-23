@@ -50,6 +50,8 @@ class Product(Base):
 
 class ProductCategory(Base):
     __tablename__ = "product_category"
+
+    CATEGORY_NAME: ClassVar[str] = "category_name"
     id = Column(Integer, primary_key=True, nullable=False)
     category_name = Column(String, nullable=False, index=True)
 

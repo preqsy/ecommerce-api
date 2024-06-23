@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import ClassVar, Optional
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
@@ -29,7 +28,6 @@ class AuthUserCreate(BaseModel):
 class AuthUserResponse(ReturnBaseModel):
     ID: ClassVar[str] = "id"
 
-    id: Optional[int] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: EmailStr = None
@@ -38,8 +36,6 @@ class AuthUserResponse(ReturnBaseModel):
     phone_verified: Optional[bool] = None
     default_role: Roles = None
     is_superuser: bool = Field(False, hidden_from_schema=True)
-    created_timestamp: Optional[datetime] = None
-    updated_timestamp: Optional[datetime] = None
 
 
 class RegisterAuthUserResponse(BaseModel):

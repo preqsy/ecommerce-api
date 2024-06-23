@@ -8,7 +8,7 @@ from core.tokens import get_current_auth_user, verify_access_token
 from main import app
 from tests.conftest import mock_crud_auth_user
 from schemas import OTPType, RegisterAuthUserResponse
-from tests.fixtures.auth_user_samples import (
+from tests.sample_datas.auth_user_samples import (
     sample_auth_user_create_customer,
     sample_auth_user_invalid_password,
     sample_auth_user_wrong_email,

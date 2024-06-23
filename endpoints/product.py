@@ -11,7 +11,7 @@ from crud import (
     get_crud_product_category,
     get_crud_product_image,
 )
-from models.auth_user import AuthUser
+from models import AuthUser, ProductCategory
 from schemas import (
     ProductCreate,
     ProductReturn,
@@ -39,7 +39,7 @@ async def create_product(
     )
     if not category:
         new_category = await crud_product_category.create(
-            data_obj={"category_name": data_obj.category}
+            data_obj={ProductCategory.CATEGORY_NAME: data_obj.category}
         )
         data_obj.product_category_id = new_category.id
     else:
@@ -125,7 +125,7 @@ async def update_product(
     if data_obj.category:
         data_obj.sku = generate_random_sku(data_obj.category[0:4])
         prod_cat = await crud_product_category.create(
-            data_obj={"category_name": data_obj.category}
+            data_obj={ProductCategory.CATEGORY_NAME: data_obj.category}
         )
         data_obj.product_category_id = prod_cat.id
 

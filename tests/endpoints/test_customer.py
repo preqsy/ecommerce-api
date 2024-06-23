@@ -3,12 +3,12 @@ import pytest
 from fastapi import status
 
 from tests.endpoints.test_auth import login_user
-from tests.fixtures.auth_user_samples import (
+from tests.sample_datas.auth_user_samples import (
     sample_auth_user_create_customer,
     sample_auth_user_create_vendor,
     sample_header,
 )
-from tests.fixtures.samples import (
+from tests.sample_datas.samples import (
     sample_customer_create,
 )
 from tests.mock_dependencies import mock_queue_connection
