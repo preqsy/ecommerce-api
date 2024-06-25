@@ -58,10 +58,16 @@ class ProductCategoryEnum(str, Enum):
     GAMES = "games"
 
 
-class PaymentType(str, Enum):
+class PaymentMethodEnum(str, Enum):
     CASH = "Cash"
     BANK_TRANSFER = "Bank_Transfer"
     CARD = "Card"
+
+
+class StatusEnum(str, Enum):
+    PROCESSING = "processing"
+    FAILED = "failed"
+    SUCCESS = "success"
 
 
 class ProductOptionalBase(BaseModel):

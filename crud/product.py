@@ -4,10 +4,13 @@ from sqlalchemy import desc
 
 from core.db import get_db
 from crud.base import CRUDBase
-from models import Product, ProductCategory, ProductImage, Order
-from schemas import ProductCreate
-from schemas import OrderCreate, ProductUpdate
-from schemas.product import ProductCategoryCreate, ProductImageCreate
+from models import Product, ProductCategory, ProductImage
+from schemas import (
+    ProductCreate,
+    ProductUpdate,
+    ProductCategoryCreate,
+    ProductImageCreate,
+)
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
@@ -73,17 +76,8 @@ class CRUDProductCategory(
         return query if query else None
 
 
-class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
-    pass
-
-
-crud_order = CRUDOrder(db=get_db(), model=Order)
 crud_product_image = CRUDProductImage(db=get_db(), model=ProductImage)
 crud_product_category = CRUDProductCategory(db=get_db(), model=ProductCategory)
-
-
-def get_crud_order(db=Depends(get_db)) -> CRUDOrder:
-    return CRUDOrder(db=db, model=Order)
 
 
 def get_crud_product(db=Depends(get_db)) -> CRUDProduct:

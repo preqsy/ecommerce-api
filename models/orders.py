@@ -3,7 +3,6 @@ from __future__ import annotations
 from core.db import Base
 from sqlalchemy import (
     Column,
-    DateTime,
     ForeignKey,
     Integer,
     String,
@@ -24,7 +23,7 @@ class Order(Base):
     total_amount = Column(Integer, nullable=False)
     status = Column(String, default="processing")
     order_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    updated_timestamp = Column(DateTime, nullable=True)
+    updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order_items = relationship("OrderItem", back_populates="order")
     payment_details = relationship("PaymentDetails", back_populates="order")
@@ -44,16 +43,20 @@ class OrderItem(Base):
         ForeignKey("products.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
+    vendor_id = Column(
+        ForeignKey("vendors.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+    )
     price = Column(Integer, nullable=False)
     quantity = Column(Integer, nullable=False)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    updated_timestamp = Column(DateTime, nullable=True)
+    updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order = relationship("Order", back_populates="order_items")
 
 
 class PaymentDetails(Base):
-    __tablename__ = "payments"
+    __tablename__ = "payment_details"
     id = Column(Integer, primary_key=True, nullable=False)
     order_id = Column(
         ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
@@ -62,8 +65,8 @@ class PaymentDetails(Base):
     payment_method = Column(String, nullable=False)
     amount = Column(Integer, nullable=False)
     status = Column(String, default="processing")
-    shipping_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    updated_timestamp = Column(DateTime, nullable=True)
+    payment_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order = relationship("Order", back_populates="payment_details")
 
@@ -80,8 +83,8 @@ class ShippingDetails(Base):
     address = Column(String, nullable=False)
     state = Column(String, nullable=False)
     country = Column(String, nullable=False)
-    payment_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    updated_timestamp = Column(DateTime, nullable=True)
+    shipping_date = Column(TIMESTAMP(timezone=True))
+    updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order = relationship("Order", back_populates="shipping_details")
 
@@ -95,5 +98,5 @@ class OrderStatus(Base):
     )
     status = Column(String, default="processing")
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    updated_timestamp = Column(DateTime, nullable=True)
+    updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
     order = relationship("Order", back_populates="order_status")
