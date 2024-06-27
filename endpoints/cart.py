@@ -9,12 +9,14 @@ from core.tokens import (
 from crud import (
     CRUDCart,
     CRUDProduct,
+    CRUDOrder,
+    CRUDPaymentDetails,
+    CRUDOrderStatus,
     get_crud_cart,
     get_crud_product,
     get_crud_order,
-    CRUDOrder,
-    CRUDCustomer,
-    get_crud_customer,
+    get_crud_payment_details,
+    get_crud_order_status,
 )
 from models import AuthUser
 from schemas import (
@@ -24,8 +26,11 @@ from schemas import (
     CartUpdateReturn,
     CartSummary,
     OrderCreate,
+    OrderCreateBase,
+    OrderStatusCreate,
+    PaymentDetailsCreate,
 )
-from schemas.base import PaymentType
+from schemas.base import PaymentMethodEnum
 from task_queue.main import get_queue_connection
 
 
@@ -111,45 +116,54 @@ async def checkout(
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
     crud_order: CRUDOrder = Depends(get_crud_order),
-    crud_customer: CRUDCustomer = Depends(get_crud_customer),
+    crud_order_status: CRUDOrderStatus = Depends(get_crud_order_status),
+    crud_payment: CRUDPaymentDetails = Depends(get_crud_payment_details),
     queue_connection: ArqRedis = Depends(get_queue_connection),
 ):
-    customer = crud_customer.get_or_raise_exception(current_user.role_id)
 
     cart_summary = await crud_cart.get_cart_summary(customer_id=current_user.role_id)
 
-    products = [products.product for products in cart_summary["cart_items"]]
+    order_data_obj = OrderCreateBase(
+        customer_id=current_user.role_id, total_amount=cart_summary["total_amount"]
+    )
+    products_and_quantity_in_cart_tuple = [
+        (products.product, products.quantity) for products in cart_summary["cart_items"]
+    ]
 
-    product_ids = [product.id for product in products]
-
-    products_iter = iter(products)
     products_quantities = []
-    for product in cart_summary["cart_items"]:
-        product_stock = next(products_iter).stock
-        if product.quantity > product_stock:
+
+    for product, quantity in products_and_quantity_in_cart_tuple:
+        if quantity > product.stock:
             raise InvalidRequest(
-                f"{product.product.product_name} has: {product_stock} stocks left"
+                f"{product.product_name} has: {product.stock} stocks left"
             )
-        products_quantities.append(product_stock - product.quantity)
-    if not data_obj.shipping_address:
-        data_obj.shipping_address = (
-            f"{customer.address} {customer.state} {customer.country}"
-        )
-    if not data_obj.contact_information:
-        data_obj.contact_information = customer.phone_number
+        products_quantities.append(product.stock - quantity)
 
-    vendor_ids = [product.vendor_id for product in products]
-    data_obj.vendor_ids = list(set(vendor_ids))
-    data_obj.customer_id = current_user.role_id
-    data_obj.total_amount = cart_summary["total_amount"]
+    order = await crud_order.create(order_data_obj)
+    await queue_connection.enqueue_job(
+        "add_shipping_details", order, data_obj.shipping_details
+    )
+    await queue_connection.enqueue_job("add_order_items", order)
 
-    new_order = await crud_order.create(data_obj)
-
-    if data_obj.payment_type == PaymentType.CARD:
+    if data_obj.payment_details.payment_method == PaymentMethodEnum.CARD:
         await create_checkout_session(quantity=int(cart_summary["total_amount"]))
+    payment_details_obj = PaymentDetailsCreate(
+        order_id=order.id,
+        payment_method=data_obj.payment_details.payment_method,
+        amount=order.total_amount,
+    )
+    await crud_payment.create(payment_details_obj)
 
+    order_status_obj = OrderStatusCreate(order_id=order.id)
+    await crud_order_status.create(order_status_obj)
+    product_ids = [product.id for product, _ in products_and_quantity_in_cart_tuple]
     await queue_connection.enqueue_job(
         "update_stock_after_checkout", product_ids, products_quantities
     )
 
-    return new_order
+    return order
+
+
+@router.get("/order")
+async def get_all_orders(crud_order: CRUDOrder = Depends(get_crud_order)):
+    return await crud_order.get_all_orders()

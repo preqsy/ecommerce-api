@@ -20,9 +20,10 @@ async def create_customer(
     sample_customer_create_details: dict = sample_customer_create(),
     sample_register_details: dict = sample_auth_user_create_customer(),
 ):
-
+    mock_queue_connection.enqueue_job.reset_mock()
     login_rsp = await login_user(
-        client, sample_register_details=sample_register_details
+        client,
+        sample_register_details=sample_register_details,
     )
 
     access_token = login_rsp.json()["access_token"]
@@ -32,8 +33,6 @@ async def create_customer(
     rsp = await client.post(
         "/customer/", json=sample_customer_create_details, headers=headers
     )
-    mock_queue_connection.enqueue_job.assert_called_once()
-
     return rsp
 
 
@@ -43,6 +42,8 @@ async def test_customer_create_success(
     database_override_dependencies,
 ):
     rsp = await create_customer(client, database_override_dependencies)
+
+    mock_queue_connection.enqueue_job.assert_called_once()
 
     assert rsp.status_code == status.HTTP_201_CREATED
 

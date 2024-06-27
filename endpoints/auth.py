@@ -11,7 +11,14 @@ from core.tokens import (
     regenerate_tokens,
     verify_access_token,
 )
-from crud import CRUDAuthUser, get_crud_auth_user, crud_refresh_token, crud_otp
+from crud import (
+    CRUDAuthUser,
+    CRUDRefreshToken,
+    CRUDOtp,
+    get_crud_auth_user,
+    get_crud_refresh_token,
+    get_crud_otp,
+)
 
 from schemas import (
     AuthUserCreate,
@@ -46,6 +53,8 @@ async def register_user(
     data_obj: AuthUserCreate,
     background_task: BackgroundTasks,
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    crud_refresh_token: CRUDRefreshToken = Depends(get_crud_refresh_token),
+    crud_otp: CRUDOtp = Depends(get_crud_otp),
     user_agent: str = Header(None),
 ):
     data_obj.email = data_obj.email.lower()
@@ -73,6 +82,7 @@ async def register_user(
 async def verify(
     data_obj: OTPCreate,
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    crud_otp: CRUDOtp = Depends(get_crud_otp),
 ):
     crud_auth_user.get_or_raise_exception(id=data_obj.auth_id)
     otp_verify: OTP = await crud_otp.verify_otp(
@@ -95,6 +105,7 @@ async def verify(
 async def login_user(
     data_obj: OAuth2PasswordRequestForm = Depends(),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    crud_refresh_token: CRUDRefreshToken = Depends(get_crud_refresh_token),
     user_agent: str = Header(None),
 ):
     user_query = crud_auth_user.get_by_email(email=data_obj.username.lower())
@@ -133,6 +144,7 @@ async def forget_password(
     background_task: BackgroundTasks,
     user_agent: str = Header(None),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    crud_otp: CRUDOtp = Depends(get_crud_otp),
 ):
     user_query = crud_auth_user.get_by_email(data_obj.email.lower())
     if not user_query:
@@ -159,6 +171,7 @@ async def reset_password(
     data_obj: NewPassword,
     token: str = Query(),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
+    crud_otp: CRUDOtp = Depends(get_crud_otp),
 ):
 
     token_data = verify_access_token(token)

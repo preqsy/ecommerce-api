@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-from schemas.base import PaymentType, ReturnBaseModel
+from schemas.base import ReturnBaseModel
 from schemas.customer import CustomerReturn
 from schemas.product import ProductReturn
 
@@ -10,7 +10,6 @@ from schemas.product import ProductReturn
 class CartCreate(BaseModel):
     product_id: int
     customer_id: Optional[int] = None
-    cart_id: Optional[str] = None
     quantity: int = Field(default=1)
 
 
@@ -43,13 +42,3 @@ class CartUpdateReturn(BaseModel):
     product_id: int
     quantity: int
     updated_timestamp: datetime
-
-
-class OrderCreate(BaseModel):
-    payment_type: PaymentType
-    shipping_address: Optional[str] = None
-    additional_note: Optional[str] = None
-    contact_information: Optional[str] = None
-    customer_id: Optional[int] = None
-    vendor_ids: Optional[list] = []
-    total_amount: Optional[float] = None

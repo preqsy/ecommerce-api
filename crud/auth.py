@@ -27,3 +27,7 @@ crud_auth_user = CRUDAuthUser(db=get_db(), model=AuthUser)
 
 def get_crud_auth_user(db=Depends(get_db)):
     return CRUDAuthUser(db=db, model=AuthUser)
+
+
+def get_crud_refresh_token(db=Depends(get_db)):
+    return CRUDRefreshToken(db=db, model=RefreshToken)

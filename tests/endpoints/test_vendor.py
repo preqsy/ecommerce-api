@@ -12,6 +12,7 @@ from tests.sample_datas.auth_user_samples import (
 from tests.sample_datas.samples import (
     sample_vendor_create,
 )
+from tests.mock_dependencies import mock_queue_connection
 
 
 async def create_vendor(
@@ -20,7 +21,7 @@ async def create_vendor(
     sample_vendor_create_details: dict = sample_vendor_create(),
     sample_register_details: dict = sample_auth_user_create_vendor(),
 ):
-
+    mock_queue_connection.enqueue_job.reset_mock()
     login_rsp = await login_user(
         client,
         sample_register_details=sample_register_details,
@@ -44,6 +45,7 @@ async def test_vendor_create_success(
     database_override_dependencies,
 ):
     rsp = await create_vendor(client, database_override_dependencies)
+    mock_queue_connection.enqueue_job.assert_called_once()
 
     assert rsp.status_code == status.HTTP_201_CREATED
 
