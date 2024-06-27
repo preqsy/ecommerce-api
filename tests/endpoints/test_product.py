@@ -4,7 +4,7 @@ import pytest
 from fastapi import status
 
 from schemas.product import ProductReturn
-from tests.conftest import get_current_verified_vendor_override_dependency
+from tests.conftest import get_current_verified_role_override_dependency
 from tests.endpoints.test_vendor import create_vendor
 from tests.sample_datas.samples import (
     sample_product_create,
@@ -18,7 +18,7 @@ from tests.sample_datas.samples import (
 async def create_product(
     client: AsyncClient,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency=get_current_verified_vendor_override_dependency,
+    get_current_verified_vendor_override_dependency=get_current_verified_role_override_dependency,
     sample_product_create_json: list = [sample_product_create()],
 ):
     await create_vendor(client, database_override_dependencies)
@@ -32,12 +32,12 @@ async def create_product(
 async def test_create_product(
     client: AsyncClient,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
     rsp = await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
 
     assert rsp.status_code == status.HTTP_201_CREATED
@@ -60,7 +60,7 @@ async def test_create_product(
 async def test_create_product_missing_important_fields(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
     field,
 ):
     sample_product_create_json = sample_product_create()
@@ -68,7 +68,7 @@ async def test_create_product_missing_important_fields(
     rsp = await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json,
     )
     assert rsp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -78,13 +78,13 @@ async def test_create_product_missing_important_fields(
 async def test_get_products_and_pagination_success(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
     products = [sample_product_create() for _ in range(random.randint(1, 100))]
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json=products,
     )
     rsp = await client.get("/products")
@@ -97,7 +97,7 @@ async def test_get_products_and_pagination_success(
 async def test_get_products_search(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
     products = [
         sample_product_create(),
@@ -107,7 +107,7 @@ async def test_get_products_search(
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json=products,
     )
     rsp = await client.get("/products?search=iphone")
@@ -130,13 +130,14 @@ async def test_get_products_search_no_product(
 async def test_get_vendor_products(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
+    # TODO: Improve this
     products = [sample_product_create() for _ in range(random.randint(1, 100))]
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json=products,
     )
     rsp = await client.get("/products/me")
@@ -149,7 +150,7 @@ async def test_get_vendor_products(
 async def test_get_products_sorted_by_price(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
     products = [
         sample_product_create(),
@@ -159,7 +160,7 @@ async def test_get_products_sorted_by_price(
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json=products,
     )
     rsp = await client.get("/products/price")
@@ -171,7 +172,7 @@ async def test_get_products_sorted_by_price(
 async def test_get_products_by_id_success(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
     products = [
         sample_product_create(),
@@ -181,7 +182,7 @@ async def test_get_products_by_id_success(
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json=products,
     )
     rsp = await client.get("/products/1")
@@ -193,7 +194,7 @@ async def test_get_products_by_id_success(
 async def test_get_products_by_invalid_id(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
     products = [
         sample_product_create(),
@@ -203,7 +204,7 @@ async def test_get_products_by_invalid_id(
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
         sample_product_create_json=products,
     )
     rsp = await client.get("/products/5")
@@ -215,13 +216,13 @@ async def test_get_products_by_invalid_id(
 async def test_update_product_success(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
 
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
     rsp = await client.put("/products/1", json=sample_product_update())
 
@@ -232,13 +233,13 @@ async def test_update_product_success(
 async def test_update_product_invalid_product_id(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
 
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
     rsp = await client.put("/products/5", json=sample_product_update())
 
@@ -249,13 +250,13 @@ async def test_update_product_invalid_product_id(
 async def test_update_product_image_invalid_product_image_id(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
 
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
     rsp = await client.put("/products/image/5", json=sample_product_image_update())
 
@@ -266,13 +267,13 @@ async def test_update_product_image_invalid_product_image_id(
 async def test_delete_product_success(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
 
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
     rsp = await client.delete("/products/1")
 
@@ -283,13 +284,13 @@ async def test_delete_product_success(
 async def test_delete_product_invalid_id(
     client,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
 ):
 
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
     rsp = await client.delete("/products/10")
 

@@ -101,7 +101,7 @@ def sample_product_create():
         "short_description": "Cool Gown",
         "product_status": True,
         "long_description": "Nice Wrist Watch",
-        "stock": 2,
+        "stock": 200,
         "price": 2000,
     }
 
@@ -154,4 +154,19 @@ def sample_product_image():
 
 
 def sample_add_to_cart():
-    return {"product_id": 1, "quantity": 1}
+    return {"product_id": 1, "quantity": 5}
+
+
+def sample_add_to_cart_invalid_id():
+    return {"product_id": 10, "quantity": 1}
+
+
+def sample_add_to_cart_overquantity():
+    return {"product_id": 1, "quantity": 10000000}
+
+
+def sample_checkout_data():
+    return {
+        "payment_details": {"payment_method": "Cash"},
+        "shipping_details": {"state": "Lagos"},
+    }

@@ -80,7 +80,7 @@ def get_current_auth_user_override_dependency():
 
 
 @pytest.fixture
-def get_current_verified_vendor_override_dependency():
+def get_current_verified_role_override_dependency():
     customer_auth_user = AuthUser(**sample_get_verified_customer())
     auth_user = AuthUser(**sample_get_verified_vendor())
 

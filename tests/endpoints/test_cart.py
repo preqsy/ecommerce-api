@@ -15,9 +15,13 @@ from tests.sample_datas.auth_user_samples import (
 )
 from tests.sample_datas.samples import (
     sample_add_to_cart,
+    sample_add_to_cart_invalid_id,
+    sample_add_to_cart_overquantity,
+    sample_checkout_data,
     sample_customer_create,
     sample_vendor_create,
 )
+from tests.mock_dependencies import mock_queue_connection
 
 
 async def create_multiple_users(
@@ -64,18 +68,215 @@ async def create_multiple_users(
     return responses
 
 
-@pytest.mark.asyncio
-async def test_add_to_cart(
+async def create_add_to_cart(
     client: AsyncClient,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_role_override_dependency,
+    sample_add_to_cart_json: dict = sample_add_to_cart(),
 ):
     await create_customer(client, database_override_dependencies)
     await create_product(
         client,
         database_override_dependencies,
-        get_current_verified_vendor_override_dependency,
+        get_current_verified_role_override_dependency,
     )
 
-    rsp = await client.post("/cart/add", json=sample_add_to_cart())
+    rsp = await client.post("/cart/add", json=sample_add_to_cart_json)
+    return rsp
+
+
+@pytest.mark.asyncio
+async def test_add_to_cart_success(
+    client: AsyncClient,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    rsp = await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
     assert rsp.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.asyncio
+async def test_add_to_cart_too_many_quantity(
+    client: AsyncClient,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    rsp = await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+        sample_add_to_cart_json=sample_add_to_cart_overquantity(),
+    )
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_add_to_cart_nonexistent_product_id(
+    client: AsyncClient,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    rsp = await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+        sample_add_to_cart_json=sample_add_to_cart_invalid_id(),
+    )
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_same_product_id_twice(
+    client: AsyncClient,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_customer(client, database_override_dependencies)
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    await client.post("/cart/add", json=sample_add_to_cart())
+    second_rsp = await client.post("/cart/add", json=sample_add_to_cart())
+    assert second_rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_update_cart_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.put("/cart/", json={"product_id": 1, "quantity": 10})
+
+    assert rsp.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_update_cart_nonexistent_product_id(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.put("/cart/", json={"product_id": 10, "quantity": 10})
+
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_delete_cart_item_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.delete("/cart/1")
+
+    assert rsp.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.asyncio
+async def test_delete_cart_item_nonexistent_product_id(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.delete("/cart/56")
+
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.asyncio
+async def test_clear_cart_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.delete("/cart/")
+
+    assert rsp.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.asyncio
+async def test_get_cart_summary_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.get("/cart/summary")
+    assert rsp.json()["total_items_quantity"]
+    assert rsp.json()["total_amount"]
+    assert rsp.json()["cart_items"]
+
+    assert rsp.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+async def test_get_cart_summary_no_cart_item(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+
+    rsp = await client.get("/cart/summary")
+
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_checkout_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_add_to_cart(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+    rsp = await client.post("/cart/checkout", json=sample_checkout_data())
+    mock_queue_connection.enqueue_job.assert_called()
+
+    print(rsp.json())
+    assert rsp.status_code == status.HTTP_200_OK
