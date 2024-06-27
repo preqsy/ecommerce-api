@@ -14,9 +14,33 @@ def sample_auth_user_create_customer():
     }
 
 
+def sample_auth_user_create_customer_second():
+    return {
+        AuthUser.EMAIL: "edenhazard@gmail.com",
+        AuthUser.PASSWORD: "2Strong",
+        AuthUser.DEFAULT_ROLE: "customer",
+    }
+
+
+def sample_auth_user_create_customer_third():
+    return {
+        AuthUser.EMAIL: "edenhazard1@gmail.com",
+        AuthUser.PASSWORD: "2Strong",
+        AuthUser.DEFAULT_ROLE: "customer",
+    }
+
+
 def sample_auth_user_create_vendor():
     return {
         AuthUser.EMAIL: "obbyprecious10@gmail.com",
+        AuthUser.PASSWORD: "2Strong",
+        AuthUser.DEFAULT_ROLE: "vendor",
+    }
+
+
+def sample_auth_user_create_vendor_second():
+    return {
+        AuthUser.EMAIL: "viniciusjunior@gmail.com",
         AuthUser.PASSWORD: "2Strong",
         AuthUser.DEFAULT_ROLE: "vendor",
     }
@@ -66,6 +90,14 @@ def sample_verify_auth_user():
 
 def sample_login_user_customer():
     return {"username": "obbyprecious12@gmail.com", "password": "2Strong"}
+
+
+def sample_login_user_customer_second():
+    return {"username": "edenhazard@gmail.com", "password": "2Strong"}
+
+
+def sample_login_user_customer_third():
+    return {"username": "edenhazard1@gmail.com", "password": "2Strong"}
 
 
 def sample_login_user_vendor():

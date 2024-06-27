@@ -10,7 +10,6 @@ from schemas.product import ProductReturn
 class CartCreate(BaseModel):
     product_id: int
     customer_id: Optional[int] = None
-    cart_id: Optional[str] = None
     quantity: int = Field(default=1)
 
 

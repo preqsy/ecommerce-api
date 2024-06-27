@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, status, BackgroundTasks
 
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
-from crud import CRUDVendor, get_crud_vendor, crud_otp
+from crud import CRUDVendor, CRUDOtp, get_crud_vendor, get_crud_otp
 from models.auth_user import AuthUser
 
 
@@ -28,6 +28,7 @@ async def create_vendor(
     current_user: AuthUser = Depends(get_current_auth_user),
     crud_vendor: CRUDVendor = Depends(get_crud_vendor),
     queue_connection: ArqRedis = Depends(get_queue_connection),
+    crud_otp: CRUDOtp = Depends(get_crud_otp),
 ):
 
     auth_user = crud_vendor.get_by_auth_id(current_user.id)

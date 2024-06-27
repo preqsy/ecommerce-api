@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends, status, BackgroundTasks
 from core.errors import InvalidRequest, ResourcesExist
 from core.tokens import get_current_auth_user
 from crud import (
-    crud_otp,
+    get_crud_otp,
     CRUDCustomer,
+    CRUDOtp,
     get_crud_customer,
 )
 
@@ -28,6 +29,7 @@ async def create_customer(
     background_tasks: BackgroundTasks,
     current_user: AuthUser = Depends(get_current_auth_user),
     crud_customer: CRUDCustomer = Depends(get_crud_customer),
+    crud_otp: CRUDOtp = Depends(get_crud_otp),
     queue_connection: ArqRedis = Depends(get_queue_connection),
 ):
 

@@ -84,6 +84,7 @@ class ShippingDetails(Base):
     state = Column(String, nullable=False)
     country = Column(String, nullable=False)
     shipping_date = Column(TIMESTAMP(timezone=True))
+    created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order = relationship("Order", back_populates="shipping_details")

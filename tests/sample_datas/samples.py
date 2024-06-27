@@ -21,6 +21,24 @@ def sample_get_verified_vendor():
     }
 
 
+def sample_get_verified_customer():
+    return {
+        AuthUser.EMAIL: "obbyprecious12@gmail.com",
+        AuthUser.PASSWORD: pwd_context.hash("2Strong"),
+        AuthUser.DEFAULT_ROLE: "customer",
+        AuthUser.CREATED_TIMESTAMP: datetime.utcnow(),
+        AuthUser.UPDATED_TIMESTAMP: None,
+        AuthUser.PHONE_VERIFIED: True,
+        AuthUser.EMAIL_VERIFIED: True,
+        AuthUser.PHONE_NUMBER: None,
+        AuthUser.ID: 1,
+        AuthUser.ROLE_ID: 1,
+        AuthUser.IS_SUPERUSER: False,
+        AuthUser.FIRST_NAME: None,
+        AuthUser.LAST_NAME: None,
+    }
+
+
 def sample_customer_create():
     return {
         "first_name": "Enzo",
@@ -34,12 +52,38 @@ def sample_customer_create():
     }
 
 
+def sample_customer_create_second():
+    return {
+        "first_name": "Eden",
+        "last_name": "Hazard",
+        "username": "preqsys",
+        "phone_number": "+2347032937591",
+        "auth_id": None,
+        "country": "Nigeria",
+        "state": "Lagos",
+        "address": "Alimosho",
+    }
+
+
+def sample_customer_create_third():
+    return {
+        "first_name": "Eden",
+        "last_name": "Gomes",
+        "username": "Hazzy",
+        "phone_number": "+2347032937590",
+        "auth_id": None,
+        "country": "Nigeria",
+        "state": "Lagos",
+        "address": "Alimosho",
+    }
+
+
 def sample_vendor_create():
     return {
         "first_name": "Cristiano",
         "last_name": "Ronaldo",
         "username": "CR7",
-        "phone_number": "+2347032937596",
+        "phone_number": "+2347032937592",
         "auth_id": None,
         "country": "Portugal",
         "state": "Madeira",
@@ -107,3 +151,7 @@ def sample_product_image_update():
 
 def sample_product_image():
     return {"product_image": "http://www.sampleimagetest.org/head", "product_id": 1}
+
+
+def sample_add_to_cart():
+    return {"product_id": 1, "quantity": 1}

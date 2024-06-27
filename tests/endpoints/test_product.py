@@ -3,24 +3,22 @@ from httpx import AsyncClient
 import pytest
 from fastapi import status
 
-from models.product import ProductImage
 from schemas.product import ProductReturn
+from tests.conftest import get_current_verified_vendor_override_dependency
 from tests.endpoints.test_vendor import create_vendor
 from tests.sample_datas.samples import (
     sample_product_create,
     sample_product_create_second,
     sample_product_create_third,
-    sample_product_image,
     sample_product_image_update,
     sample_product_update,
 )
-from tests.mock_dependencies import mock_crud_product_image
 
 
 async def create_product(
     client: AsyncClient,
     database_override_dependencies,
-    get_current_verified_vendor_override_dependency,
+    get_current_verified_vendor_override_dependency=get_current_verified_vendor_override_dependency,
     sample_product_create_json: list = [sample_product_create()],
 ):
     await create_vendor(client, database_override_dependencies)

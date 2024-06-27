@@ -1,3 +1,4 @@
+from typing import Dict, List, Union
 import pytest
 from fastapi import status
 from unittest.mock import patch
@@ -6,7 +7,10 @@ from httpx import AsyncClient
 from core.errors import InvalidRequest
 from core.tokens import get_current_auth_user, verify_access_token
 from main import app
-from tests.conftest import mock_crud_auth_user
+from models.auth_user import OTP
+from schemas.otp import OTPCreate
+from tests.conftest import database_override_dependencies, mock_crud_auth_user
+from tests.mock_dependencies import mock_crud_otp
 from schemas import OTPType, RegisterAuthUserResponse
 from tests.sample_datas.auth_user_samples import (
     sample_auth_user_create_customer,
@@ -28,7 +32,6 @@ async def register_user(
     client: AsyncClient,
     sample_register_details: dict = sample_auth_user_create_customer(),
 ):
-
     response = await client.post(
         "/auth/register",
         json=sample_register_details,
@@ -39,39 +42,60 @@ async def register_user(
 
 
 async def register_and_verify_email(
-    client, sample_register_details: dict = sample_auth_user_create_customer()
+    client,
+    database_override_dependencies=database_override_dependencies,
+    sample_register_details: dict = sample_auth_user_create_customer(),
 ):
+    mock_crud_otp.verify_otp.reset_mock()
+    register_rsp = await register_user(
+        client, sample_register_details=sample_register_details
+    )
+    mock_crud_otp.verify_otp.return_value = True
+    verify_auth_user = sample_verify_auth_user()
+    verify_auth_user["auth_id"] = register_rsp.json()["auth_user"]["id"]
 
-    register_rsp = await register_user(client, sample_register_details)
-    with patch(crud_otp_verify_path) as mock_crud_otp:
-        mock_crud_otp.return_value = True
+    rsp = await client.post("/auth/verify", json=verify_auth_user)
 
-        rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
+    mock_crud_otp.verify_otp.assert_called_once()
 
-        mock_crud_otp.assert_called_once_with(
-            auth_id=1,
-            token="930287",
-            otp_type=OTPType.EMAIL,
-        )
-
-        assert rsp.json() == {"verified": True}
-        assert rsp.status_code == 200
-        return register_rsp
+    assert rsp.json() == {"verified": True}
+    assert rsp.status_code == 200
+    return register_rsp
 
 
 async def login_user(
     client: AsyncClient,
-    sample_register_details: dict = sample_auth_user_create_customer(),
-    login_details: dict[str, str] = sample_login_user_customer(),
+    sample_register_details: Union[List, Dict] = sample_auth_user_create_customer(),
+    login_details: Union[List, Dict] = sample_login_user_customer(),
 ):
-    register_rsp = await register_and_verify_email(client, sample_register_details)
-    access_token = register_rsp.json()["tokens"]["access_token"]
-    headers = sample_header()
-    headers["authorization"] = "Bearer {}".format(access_token)
 
-    rsp = await client.post("/auth/token", data=login_details, headers=headers)
+    response = []
+    if isinstance(sample_register_details, dict) and isinstance(login_details, dict):
+        register_rsp = await register_and_verify_email(
+            client, sample_register_details=sample_register_details
+        )
+        access_token = register_rsp.json()["tokens"]["access_token"]
+        headers = sample_header()
+        headers["authorization"] = "Bearer {}".format(access_token)
+        rsp = await client.post("/auth/token", data=login_details, headers=headers)
 
-    return rsp
+        return rsp
+    login_iter = iter(login_details)
+    for sample_user in sample_register_details:
+        login = next(login_iter)
+        register_rsp = await register_and_verify_email(
+            client, sample_register_details=sample_user
+        )
+        access_token = register_rsp.json()["tokens"]["access_token"]
+        headers = sample_header()
+        headers["authorization"] = "Bearer {}".format(access_token)
+
+        rsp = await client.post("/auth/token", data=login, headers=headers)
+        new_data = rsp.json()
+        new_data.update({"default_role": sample_user["default_role"]})
+        response.append(new_data)
+
+    return response
 
 
 @pytest.mark.asyncio
@@ -88,7 +112,8 @@ async def test_register_success(client, database_override_dependencies):
 @pytest.mark.asyncio
 async def test_register_wrong_email_format(client, database_override_dependencies):
     response = await register_user(
-        client=client, sample_register_details=sample_auth_user_wrong_email()
+        client,
+        sample_register_details=sample_auth_user_wrong_email(),
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -110,20 +135,18 @@ async def test_verify_token_email_success(client, database_override_dependencies
 
     await register_user(client)
 
-    with patch(crud_otp_verify_path) as mock_crud_otp:
+    mock_crud_otp.verify_otp.return_value = True
 
-        mock_crud_otp.return_value = True
+    rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
 
-        rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
-
-        mock_crud_otp.assert_called_once_with(
-            auth_id=1,
-            token="930287",
-            otp_type=OTPType.EMAIL,
-        )
-
-        assert rsp.json() == {"verified": True}
-        assert rsp.status_code == 200
+    mock_crud_otp.verify_otp.assert_called_once_with(
+        auth_id=1,
+        token="930287",
+        otp_type=OTPType.EMAIL,
+    )
+    mock_crud_otp.verify_otp.reset_mock()
+    assert rsp.json() == {"verified": True}
+    assert rsp.status_code == 200
 
 
 @pytest.mark.asyncio
@@ -131,19 +154,17 @@ async def test_verify_email_token_wrong_token(client, database_override_dependen
 
     await register_user(client)
 
-    with patch(crud_otp_verify_path) as mock_crud_otp:
+    mock_crud_otp.verify_otp.return_value = None
 
-        mock_crud_otp.return_value = None
+    rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
 
-        rsp = await client.post("/auth/verify", json=sample_verify_auth_user())
+    mock_crud_otp.verify_otp.assert_called_once_with(
+        auth_id=1,
+        token="930287",
+        otp_type=OTPType.EMAIL,
+    )
 
-        mock_crud_otp.assert_called_once_with(
-            auth_id=1,
-            token="930287",
-            otp_type=OTPType.EMAIL,
-        )
-
-        assert rsp.status_code == status.HTTP_403_FORBIDDEN
+    assert rsp.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.asyncio
@@ -242,6 +263,9 @@ async def test_get_user_success(
 async def test_forget_password_success(client, database_override_dependencies):
     await register_user(client)
 
+    mock_crud_otp.check_number_of_trials.return_value = OTP(
+        no_of_tries=1, auth_id=1, otp_type=OTPType.EMAIL, otp="019203"
+    )
     rsp = await client.post(
         "/auth/forget-password",
         json={"email": "obbyprecious12@gmail.com"},
@@ -256,13 +280,10 @@ async def test_forget_password_success(client, database_override_dependencies):
 @pytest.mark.asyncio
 async def test_forget_password_many_requests(client, database_override_dependencies):
     await register_user(client)
-    for _ in range(2):
-        rsp = await client.post(
-            "/auth/forget-password",
-            json={"email": "obbyprecious12@gmail.com"},
-            headers=sample_header(),
-        )
-        assert rsp.status_code == status.HTTP_200_OK
+
+    mock_crud_otp.check_number_of_trials.return_value = OTP(
+        no_of_tries=4, auth_id=1, otp_type=OTPType.EMAIL, otp="019203"
+    )
     rsp = await client.post(
         "/auth/forget-password",
         json={"email": "obbyprecious12@gmail.com"},
