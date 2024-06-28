@@ -2,6 +2,7 @@ from arq import ArqRedis
 from fastapi import APIRouter, Depends, status
 
 from core.errors import InvalidRequest
+from core.paystack import PaystackClient, get_paystack
 from core.stripe_payment import create_checkout_session
 from core.tokens import (
     get_current_verified_customer,
@@ -167,3 +168,8 @@ async def checkout(
 @router.get("/order")
 async def get_all_orders(crud_order: CRUDOrder = Depends(get_crud_order)):
     return await crud_order.get_all_orders()
+
+
+@router.get("/test-paystack")
+async def get_all_orders(paystack: PaystackClient = Depends(get_paystack)):
+    return await paystack.get_balance()
