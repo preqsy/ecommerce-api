@@ -59,15 +59,17 @@ class ProductCategoryEnum(str, Enum):
 
 
 class PaymentMethodEnum(str, Enum):
-    CASH = "Cash"
-    BANK_TRANSFER = "Bank_Transfer"
-    CARD = "Card"
+    CASH = "cash"
+    BANK_TRANSFER = "bank transfer"
+    CARD = "card"
 
 
 class StatusEnum(str, Enum):
     PROCESSING = "processing"
     FAILED = "failed"
     SUCCESS = "success"
+    ABADONED = "abandoned"
+    PENDING = "pending"
 
 
 class ProductOptionalBase(BaseModel):

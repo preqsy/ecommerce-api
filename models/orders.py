@@ -26,9 +26,10 @@ class Order(Base):
     updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order_items = relationship("OrderItem", back_populates="order")
-    payment_details = relationship("PaymentDetails", back_populates="order")
+    payment_details = relationship(
+        "PaymentDetails", back_populates="order", uselist=False
+    )
     shipping_details = relationship("ShippingDetails", back_populates="order")
-    order_status = relationship("OrderStatus", back_populates="order")
 
 
 class OrderItem(Base):
@@ -61,11 +62,14 @@ class PaymentDetails(Base):
     order_id = Column(
         ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
+        unique=True,
     )
     payment_method = Column(String, nullable=False)
     amount = Column(Integer, nullable=False)
     status = Column(String, default="processing")
-    payment_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    payment_ref = Column(String, nullable=True, unique=True)
+    paid_at = Column(TIMESTAMP(timezone=True))
+    created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order = relationship("Order", back_populates="payment_details")
@@ -88,16 +92,3 @@ class ShippingDetails(Base):
     updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
 
     order = relationship("Order", back_populates="shipping_details")
-
-
-class OrderStatus(Base):
-    __tablename__ = "order_status"
-    id = Column(Integer, primary_key=True, nullable=False)
-    order_id = Column(
-        ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
-        nullable=False,
-    )
-    status = Column(String, default="processing")
-    created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    updated_timestamp = Column(TIMESTAMP(timezone=True), nullable=True)
-    order = relationship("Order", back_populates="order_status")
