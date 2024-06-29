@@ -8,7 +8,6 @@ from core.errors import InvalidRequest
 from core.tokens import get_current_auth_user, verify_access_token
 from main import app
 from models.auth_user import OTP
-from schemas.otp import OTPCreate
 from tests.conftest import database_override_dependencies, mock_crud_auth_user
 from tests.mock_dependencies import mock_crud_otp
 from schemas import OTPType, RegisterAuthUserResponse

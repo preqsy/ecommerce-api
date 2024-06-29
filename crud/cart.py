@@ -6,6 +6,7 @@ from core.db import get_db
 from core.errors import InvalidRequest, MissingResources
 from crud.base import CRUDBase
 from models.cart import Cart
+from models.product import Product
 from schemas import CartCreate
 from schemas.cart import CartUpdate
 
@@ -38,7 +39,7 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
     async def get_cart_summary(
         self,
         customer_id: int,
-    ):
+    ) -> Dict:
         cart_items = self.get_cart_items(customer_id)
         if not cart_items:
             raise MissingResources("No items in cart")
@@ -64,7 +65,7 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
             return None
         return query_result
 
-    def get_by_customer_id(self, customer_id: int) -> Cart:
+    def get_cart_items_by_customer_id(self, customer_id: int) -> List[Cart]:
         query_result = (
             self._db.query(self.model)
             .filter(self.model.customer_id == customer_id)
@@ -89,16 +90,28 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
         self._db.commit()
         return data_dict
 
-    async def check_if_product_id_exist_in_cart(self, customer_id, product_id):
-        cart_item = self.get_by_customer_id(customer_id=customer_id)
+    async def check_if_product_id_exist_in_cart(
+        self, customer_id, product_id
+    ) -> List[Product]:
+        cart_item = self.get_cart_items_by_customer_id(customer_id=customer_id)
 
         if not cart_item:
             raise InvalidRequest("No Cart Item")
 
         try:
-            next(item for item in cart_item if item.product_id == product_id)
+            # Filter the cart items to get a list of products that match the given product ID
+            product_list = [
+                item.product for item in cart_item if item.product_id == product_id
+            ]
+            # Create an iterator for the filtered products list
+            product_iter = iter(product_list)
+            # Advance the iterator to the first item to check if there is at least one matching product
+            next(product_iter)
+            # If the product is found, return the list of matching products
+            return product_list
+
         except StopIteration:
-            raise InvalidRequest("Id doesn't exist in cart")
+            raise InvalidRequest("Product doesn't exist in cart")
 
 
 def get_crud_cart(db=Depends(get_db)) -> CRUDCart:

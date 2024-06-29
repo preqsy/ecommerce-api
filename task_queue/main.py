@@ -11,7 +11,6 @@ from crud import (
     get_crud_vendor,
     get_crud_auth_user,
     get_crud_order_item,
-    get_crud_order_status,
     get_crud_payment_details,
     get_crud_shipping_details,
 )
@@ -41,7 +40,6 @@ async def startup(ctx):
     ctx["crud_shipping_details"] = get_crud_shipping_details(db)
     ctx["crud_payment_details"] = get_crud_payment_details(db)
     ctx["crud_order_item"] = get_crud_order_item(db)
-    ctx["crud_order_status"] = get_crud_order_status(db)
 
 
 async def shutdown(ctx):

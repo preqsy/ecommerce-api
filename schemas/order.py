@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from schemas.base import PaymentMethodEnum, StatusEnum
 
 
-class OrderCreateBase(BaseModel):
+class OrderCreate(BaseModel):
     customer_id: Optional[int] = None
     status: StatusEnum = StatusEnum.PROCESSING
     total_amount: Optional[float] = None
@@ -24,6 +24,7 @@ class PaymentDetailsCreate(BaseModel):
     payment_method: PaymentMethodEnum
     amount: Optional[int] = None
     status: StatusEnum = StatusEnum.PROCESSING
+    payment_ref: Optional[str] = None
 
 
 class ShippingDetailsCreate(BaseModel):
@@ -36,11 +37,6 @@ class ShippingDetailsCreate(BaseModel):
     shipping_date: Optional[datetime] = None
 
 
-class OrderStatusCreate(BaseModel):
-    order_id: Optional[int] = None
-    status: StatusEnum = StatusEnum.PROCESSING
-
-
-class OrderCreate(BaseModel):
+class CheckoutCreate(BaseModel):
     payment_details: PaymentDetailsCreate
     shipping_details: Optional[ShippingDetailsCreate] = None
