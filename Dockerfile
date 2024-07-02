@@ -24,11 +24,7 @@ RUN poetry run uvicorn --version
 # Expose the application port
 EXPOSE 8000
 
-# Copy environment file
-COPY .env .env
 
-# Set environment variables from .env file
-ENV $(cat .env | grep -v ^# | xargs)
 
 
 # Set the default command to run the application
