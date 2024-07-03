@@ -1,22 +1,22 @@
+from typing import List, Union
 from fastapi import Depends
 import sqlalchemy
 import sqlalchemy.orm
 
 from core.db import get_db
 from crud.base import CRUDBase
-from models import Order, OrderStatus, OrderItem, ShippingDetails, PaymentDetails
+from models import Order, OrderItem, ShippingDetails, PaymentDetails
 from schemas import (
-    OrderCreate,
+    CheckoutCreate,
     PaymentDetailsCreate,
     OrderItemsCreate,
     ShippingDetailsCreate,
-    OrderStatusCreate,
 )
 
 
-class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
+class CRUDOrder(CRUDBase[Order, CheckoutCreate, CheckoutCreate]):
 
-    async def get_all_orders(self):
+    async def get_all_orders(self) -> List[Order]:
         query = (
             self._db.query(self.model)
             .options(
@@ -33,12 +33,10 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
         query = self._db.query(self.model).delete()
 
 
-class CRUDOrderStatus(CRUDBase[OrderStatus, OrderStatusCreate, OrderStatusCreate]):
-    pass
-
-
 class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
-    pass
+    def get_by_order_id(self, order_id: int) -> Union[List[OrderItem], None]:
+        query = self._db.query(self.model).filter(self.model.order_id == order_id).all()
+        return query if query else None
 
 
 class CRUDShippingDetails(
@@ -50,7 +48,13 @@ class CRUDShippingDetails(
 class CRUDPaymentDetails(
     CRUDBase[PaymentDetails, PaymentDetailsCreate, PaymentDetailsCreate]
 ):
-    pass
+    def get_by_payment_ref(self, payment_ref) -> Union[PaymentDetails, None]:
+        query = (
+            self._db.query(self.model)
+            .filter(self.model.payment_ref == payment_ref)
+            .first()
+        )
+        return query if query else None
 
 
 crud_order = CRUDOrder(db=get_db(), model=Order)
@@ -58,10 +62,6 @@ crud_order = CRUDOrder(db=get_db(), model=Order)
 
 def get_crud_order(db=Depends(get_db)) -> CRUDOrder:
     return CRUDOrder(db=db, model=Order)
-
-
-def get_crud_order_status(db=Depends(get_db)) -> CRUDOrderStatus:
-    return CRUDOrderStatus(db=db, model=OrderStatus)
 
 
 def get_crud_order_item(db=Depends(get_db)) -> CRUDOrderItem:

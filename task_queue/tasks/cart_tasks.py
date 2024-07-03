@@ -1,18 +1,10 @@
-from typing import List
+from typing import List, Tuple
 
 from crud import CRUDProduct
 from crud import CRUDCustomer, CRUDShippingDetails, CRUDOrderItem, CRUDCart
 from models import Product
 from models.orders import Order
 from schemas import ShippingDetailsCreate, OrderItemsCreate
-
-
-async def update_stock_after_checkout(ctx, product_ids: List, new_stock: int):
-    crud_product: CRUDProduct = ctx["crud_product"]
-
-    for index, ids in enumerate(product_ids):
-        crud_product.get_or_raise_exception(ids)
-        await crud_product.update(id=ids, data_obj={Product.STOCK: new_stock[index]})
 
 
 async def add_shipping_details(
@@ -60,3 +52,19 @@ async def add_order_items(ctx, order: Order):
             product_id=product.id,
         )
         await crud_order_item.create(order_item)
+        return
+
+
+async def update_stock_after_checkout(ctx, order_id):
+    crud_order_item: CRUDOrderItem = ctx["crud_order_item"]
+    crud_product: CRUDProduct = ctx["crud_product"]
+
+    order_items = crud_order_item.get_by_order_id(order_id)
+    product_id_and_quantity: List[Tuple[int]] = [
+        (item.product_id, item.quantity) for item in order_items
+    ]
+    for product_id, cart_item_quantity in product_id_and_quantity:
+        product = crud_product.get_or_raise_exception(id=product_id)
+        quantity = product.stock - cart_item_quantity
+        await crud_product.update(id=product_id, data_obj={Product.STOCK: quantity})
+        return

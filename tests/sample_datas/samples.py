@@ -167,6 +167,6 @@ def sample_add_to_cart_overquantity():
 
 def sample_checkout_data():
     return {
-        "payment_details": {"payment_method": "Cash"},
+        "payment_details": {"payment_method": "cash"},
         "shipping_details": {"state": "Lagos"},
     }
