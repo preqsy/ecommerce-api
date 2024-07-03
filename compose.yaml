@@ -26,6 +26,14 @@ services:
     depends_on:
       - redis
       - db
-
+  queue:
+    build:
+      context: .
+      dockerfile: "task_queue/Dockerfile"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
 volumes:
   postgres_data:
