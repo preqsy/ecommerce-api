@@ -40,7 +40,7 @@ This project is an e-commerce API designed to manage user carts, including addin
 
 For detailed API endpoints and how to use them, you can download the Postman collection:
 
-[Download Postman Collection](https://github.com/preqsy/ecommerce-api/raw/main/ecommerce.postman_collections.json)
+[Download Postman Collection](https://github.com/preqsy/ecommerce-api/blob/main/ecommerce.postman_collection.json)
 
 ### Installation
 
