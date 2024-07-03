@@ -1,4 +1,3 @@
-
 # E-commerce API
 
 This project is an e-commerce API designed to manage user carts, including adding products, viewing cart items, and calculating the total cart amount. It integrates product management, user authentication, and cart operations to provide a seamless shopping experience.
@@ -10,6 +9,8 @@ This project is an e-commerce API designed to manage user carts, including addin
 - **Product Management**: CRUD operations for products.
 - **Data Validation**: Pydantic models for robust data validation.
 - **Database Interaction**: SQLAlchemy for ORM and PostgreSQL as the database.
+- **Payment Integration**: Paystack for handling payments.
+- **Caching**: Redis for caching and background tasks.
 
 ## Technologies Used
 
@@ -23,7 +24,8 @@ This project is an e-commerce API designed to manage user carts, including addin
 - **Poetry**: For dependency management.
 - **Git**: For version control.
 - **Asynchronous Programming**: For enhancing API performance with FastAPI.
-- **Redis**: For Caching and Background Tasks
+- **Redis**: For caching and background tasks.
+- **Paystack**: For payment processing.
 
 ## Getting Started
 
@@ -32,49 +34,83 @@ This project is an e-commerce API designed to manage user carts, including addin
 - Python 3.10+
 - PostgreSQL
 - Docker (optional, for containerization)
+- Paystack account for payment processing
 
 ### Installation
 
 1. **Clone the repository**:
-    ```sh
-    git clone https://github.com/yourusername/ecommerce-api.git
-    cd ecommerce-api
-    ```
+
+   ```sh
+   git clone https://github.com/preqsy/ecommerce-api.git
+   cd ecommerce-api
+   ```
 
 2. **Install Poetry**:
-    Follow the instructions at [Poetry's official documentation](https://python-poetry.org/docs/#installation) to install Poetry.
+   Follow the instructions at [Poetry's official documentation](https://python-poetry.org/docs/#installation) to install Poetry.
 
 3. **Install dependencies**:
-    ```sh
-    poetry install
-    ```
+
+   ```sh
+   poetry install
+   ```
 
 4. **Set up the database**:
-    Create a PostgreSQL database and configure the connection in the `.env` file.
+   Create a PostgreSQL database and configure the connection in the `.env` file.
 
-5. **Run database migrations**:
-    ```sh
-    poetry run alembic upgrade head
-    ```
+   ```
+    SQLALCHEMY_DATABASE_URL=your_database_url
+   ```
 
-6. **Start the application**:
-    ```sh
-    uvicorn main:app --reload
-    ```
+5. **Configure Paystack**:
+   Add your Paystack public and secret keys to the `.env` file:
+
+   ```
+   PAYSTACK_PUBLIC_KEY=your_public_key
+   PAYSTACK_SECRET_KEY=your_secret_key
+   ```
+
+6. **Run database migrations**:
+
+   ```sh
+   poetry run alembic upgrade head
+   ```
+
+7. **Start the application**:
+   ```sh
+   uvicorn main:app --reload
+   ```
 
 ### Running Tests
 
 To ensure the API functions correctly, we have implemented tests using `pytest`.
 
 1. **Install `pytest`**:
-    ```sh
-    poetry add pytest --dev
-    ```
+
+   ```sh
+   poetry add pytest --dev
+   ```
 
 2. **Run the tests**:
-    ```sh
-    poetry run pytest tests/
-    ```
+   ```sh
+   poetry run pytest tests/
+   ```
+
+### Running with Docker
+
+1. **Build the Docker image**:
+
+   ```sh
+   docker build -t ecommerce-api .
+   ```
+
+2. **Run the Docker container**:
+
+   ```sh
+   docker run --name ecommerce-api -p 8000:8000 --env-file .env ecommerce-api
+   ```
+
+3. **Access the application**:
+   The application will be available at `http://localhost:8000`.
 
 ## Project Structure
 
@@ -82,10 +118,12 @@ To ensure the API functions correctly, we have implemented tests using `pytest`.
 ecommerce-api/
 ├── alembic/                # Database migrations
 ├── core/                   # Core functionalities and settings
+├── crud/                   # CRUD functionalities
 ├── endpoints/              # API endpoints
 ├── models/                 # SQLAlchemy models
 ├── schemas/                # Pydantic schemas
 ├── tests/                  # Test cases
+├── task_queue/             # Background Services Functionality
 ├── .env                    # Environment variables
 ├── main.py                 # Entry point of the application
 ├── pyproject.toml          # Poetry configuration file
@@ -103,7 +141,4 @@ This project is licensed under the MIT License.
 
 ## Contact
 
-For more information, please contact (mailto:obbyprecious24@gmail.com).
-
----
-
+For more information, please contact [obbyprecious24@gmail.com](mailto:obbyprecious24@gmail.com).
