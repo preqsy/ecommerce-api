@@ -9,13 +9,14 @@ logger = logging.getLogger(__name__)
 
 
 class PaystackClient:
-    def __init__(self, client):
+
+    def __init__(self, client=AsyncClient):
         self.client: AsyncClient = client(
             base_url=settings.paystack_config.BASE_URL,
             headers={"Authorization": f"Bearer {settings.paystack_config.SECRET_KEY}"},
         )
 
-    async def initialize_payment(self, email, amount, **kwargs):
+    async def initialize_payment(self, email, amount, channel, **kwargs):
         customer: Customer = kwargs.get("customer")
         order: Order = kwargs.get("order")
         metadata = {
@@ -37,12 +38,15 @@ class PaystackClient:
                 json={
                     "email": email,
                     "amount": amount * 100,
-                    "callback_url": "/cart/checkout",
+                    "channel": channel,
+                    "callback_url": settings.paystack_config.CALLBACK_URL,
                     "metadata": metadata,
                 },
             )
         except Exception as e:
             logger.error(e)
+            return {"error": str(e)}
+
         return rsp.json()
 
     async def verify_payment(self, payment_ref):
@@ -56,5 +60,5 @@ class PaystackClient:
         return rsp_data
 
 
-def get_paystack(client=AsyncClient):
-    return PaystackClient(client=client)
+def get_paystack():
+    return PaystackClient()

@@ -108,7 +108,7 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
             # Advance the iterator to the first item to check if there is at least one matching product
             next(product_iter)
             # If the product is found, return the list of matching products
-            return product_list
+            return product_list[0]
 
         except StopIteration:
             raise InvalidRequest("Product doesn't exist in cart")

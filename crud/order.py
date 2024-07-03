@@ -34,7 +34,9 @@ class CRUDOrder(CRUDBase[Order, CheckoutCreate, CheckoutCreate]):
 
 
 class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
-    pass
+    def get_by_order_id(self, order_id: int) -> Union[List[OrderItem], None]:
+        query = self._db.query(self.model).filter(self.model.order_id == order_id).all()
+        return query if query else None
 
 
 class CRUDShippingDetails(

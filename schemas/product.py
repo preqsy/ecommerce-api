@@ -35,7 +35,7 @@ class ProductCreate(ProductOptionalBase):
     product_status: bool = True
     long_description: str
     stock: int
-    price: float = Field(gt=0)
+    price: int = Field(gt=0)
 
 
 class ProductReturn(ReturnBaseModel, ProductCreate):

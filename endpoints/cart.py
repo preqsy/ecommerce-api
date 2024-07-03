@@ -31,6 +31,7 @@ from schemas import (
     PaymentDetailsCreate,
 )
 from schemas.base import PaymentMethodEnum, StatusEnum
+from schemas.order import PaymentVerified
 from task_queue.main import get_queue_connection
 
 
@@ -45,7 +46,8 @@ async def create_cart(
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
     product = crud_product.get_or_raise_exception(data_obj.product_id)
-    if crud_cart.get_by_product_id(product_id=data_obj.product_id):
+    cart_item = crud_cart.get_by_product_id(product_id=data_obj.product_id)
+    if cart_item and cart_item.customer_id == current_user.role_id:
         raise InvalidRequest("Already add item to cart")
     data_obj.customer_id = current_user.role_id
     if data_obj.quantity > product.stock:
@@ -61,10 +63,9 @@ async def update_cart(
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_cart: CRUDCart = Depends(get_crud_cart),
 ):
-    cart_stock = await crud_cart.check_if_product_id_exist_in_cart(
+    product = await crud_cart.check_if_product_id_exist_in_cart(
         customer_id=current_user.role_id, product_id=data_obj.product_id
     )
-    product = cart_stock[0]
 
     if product.id == data_obj.product_id:
         if data_obj.quantity > product.stock:
@@ -132,14 +133,11 @@ async def checkout(
         (products.product, products.quantity) for products in cart_summary["cart_items"]
     ]
 
-    products_quantities = []
-
     for product, quantity in products_and_quantity_in_cart:
         if quantity > product.stock:
             raise InvalidRequest(
                 f"{product.product_name} has: {product.stock} stocks left"
             )
-        products_quantities.append(product.stock - quantity)
 
     order = await crud_order.create(order_data_obj)
     await queue_connection.enqueue_job(
@@ -154,6 +152,7 @@ async def checkout(
         return await paystack.initialize_payment(
             amount=int(cart_summary["total_amount"]),
             email=current_user.email,
+            channel=data_obj.payment_details.payment_method,
             **paystack_metadata,
         )
 
@@ -164,10 +163,7 @@ async def checkout(
     )
     await crud_payment.create(payment_details_obj)
 
-    product_ids = [product.id for product, _ in products_and_quantity_in_cart]
-    await queue_connection.enqueue_job(
-        "update_stock_after_checkout", product_ids, products_quantities
-    )
+    await queue_connection.enqueue_job("update_stock_after_checkout", order.id)
 
     return order
 
@@ -177,11 +173,13 @@ async def get_all_orders(crud_order: CRUDOrder = Depends(get_crud_order)):
     return await crud_order.get_all_orders()
 
 
-@router.get("/verify-payment/{payment_ref}")
+@router.get("/verify-payment/{payment_ref}", response_model=PaymentVerified)
 async def verify_order_payment(
     payment_ref: str,
     current_user: AuthUser = Depends(get_current_verified_customer),
     crud_payment: CRUDPaymentDetails = Depends(get_crud_payment_details),
+    crud_order: CRUDOrder = Depends(get_crud_order),
+    queue_connection: ArqRedis = Depends(get_queue_connection),
     paystack: PaystackClient = Depends(get_paystack),
 ):
     payment_details = crud_payment.get_by_payment_ref(payment_ref=payment_ref)
@@ -190,6 +188,7 @@ async def verify_order_payment(
         raise InvalidRequest("Payment Already Successful")
 
     payment_rsp = await paystack.verify_payment(payment_ref=payment_ref)
+    order_id = payment_rsp["metadata"]["order_id"]
 
     match payment_rsp["status"]:
         case StatusEnum.ABADONED:
@@ -197,19 +196,23 @@ async def verify_order_payment(
                 "You have a pending transaction, Complete Your Payment"
             )
         case StatusEnum.FAILED:
+            await crud_order.delete(id=order_id)
             raise InvalidRequest("Payment Failed, Checkout again and complete Payment ")
         case StatusEnum.SUCCESS:
             pass
         case _:
+            await crud_order.delete(id=order_id)
             raise InvalidRequest("Contact Paystack and try again")
-
-    order_id = payment_rsp["metadata"]["order_id"]
 
     payment_details_obj = PaymentDetailsCreate(
         order_id=order_id,
         payment_method=payment_rsp["channel"],
-        amount=payment_rsp["amount"],
+        amount=payment_rsp["amount"] / 100,
         payment_ref=payment_rsp["reference"],
         status=StatusEnum.SUCCESS,
+        paid_at=payment_rsp["paid_at"],
     )
-    return await crud_payment.create(payment_details_obj)
+    await queue_connection.enqueue_job("update_stock_after_checkout", order_id)
+    await crud_payment.create(payment_details_obj)
+
+    return PaymentVerified

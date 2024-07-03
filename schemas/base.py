@@ -60,7 +60,7 @@ class ProductCategoryEnum(str, Enum):
 
 class PaymentMethodEnum(str, Enum):
     CASH = "cash"
-    BANK_TRANSFER = "bank transfer"
+    BANK_TRANSFER = "bank_transfer"
     CARD = "card"
 
 

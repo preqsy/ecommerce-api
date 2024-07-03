@@ -25,6 +25,7 @@ class PaymentDetailsCreate(BaseModel):
     amount: Optional[int] = None
     status: StatusEnum = StatusEnum.PROCESSING
     payment_ref: Optional[str] = None
+    paid_at: Optional[datetime] = None
 
 
 class ShippingDetailsCreate(BaseModel):
@@ -40,3 +41,7 @@ class ShippingDetailsCreate(BaseModel):
 class CheckoutCreate(BaseModel):
     payment_details: PaymentDetailsCreate
     shipping_details: Optional[ShippingDetailsCreate] = None
+
+
+class PaymentVerified(BaseModel):
+    payment_verified: bool = True

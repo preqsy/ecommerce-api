@@ -3,6 +3,7 @@ from fastapi import Depends
 from sqlalchemy import desc
 
 from core.db import get_db
+from core.errors import MissingResources
 from crud.base import CRUDBase
 from models import Product, ProductCategory, ProductImage
 from schemas import (
@@ -44,10 +45,8 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .limit(limit)
             .all()
         )
-        if not product_query:
-            return None
 
-        return product_query
+        return product_query if product_query else None
 
     def sort_product_by_price(self, skip: int = 0, limit: int = 20) -> List[Product]:
         product_query = (
@@ -58,6 +57,12 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .all()
         )
         return product_query
+
+    def get_or_raise_exception(self, id: int) -> Product:
+        query_result = self._db.query(self.model).filter(self.model.id == id).first()
+        if not query_result or not query_result.product_status:
+            raise MissingResources
+        return query_result
 
 
 class CRUDProductImage(CRUDBase[ProductImage, ProductImageCreate, ProductImageCreate]):
