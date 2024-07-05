@@ -153,6 +153,24 @@ def sample_product_image():
     return {"product_image": "http://www.sampleimagetest.org/head", "product_id": 1}
 
 
+def sample_product_review_create():
+    return {"review": "Nonsense", "rating": 1.5, "product_id": 1}
+
+
+def sample_product_review_create_nonexistent_product_id():
+    return {"review": "Nonsense", "rating": 1.5, "product_id": 10}
+
+
+def sample_product_review_create_invalid_rating():
+    return {"review": "Nonsense", "rating": 15.5, "product_id": 10}
+
+
+def sample_product_review_update():
+    return {
+        "review": "Nonsense",
+    }
+
+
 def sample_add_to_cart():
     return {"product_id": 1, "quantity": 5}
 

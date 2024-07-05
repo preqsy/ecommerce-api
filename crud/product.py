@@ -1,6 +1,7 @@
 from typing import List, Union
 from fastapi import Depends
 from sqlalchemy import desc
+
 import sqlalchemy
 import sqlalchemy.orm
 
@@ -31,7 +32,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .order_by(desc(self.model.created_timestamp))
             .offset(skip)
             .limit(limit)
-            # .options(sqlalchemy.orm.joinedload(self.model.reviews))
+            .options(sqlalchemy.orm.joinedload(self.model.reviews))
         ).all()
 
         return product_query if product_query else None
