@@ -1,22 +1,26 @@
 from typing import List, Union
 from fastapi import Depends
 from sqlalchemy import desc
+import sqlalchemy
+import sqlalchemy.orm
 
 from core.db import get_db
 from core.errors import MissingResources
 from crud.base import CRUDBase
-from models import Product, ProductCategory, ProductImage
+from models import Product, ProductCategory, ProductImage, ProductReview
 from schemas import (
     ProductCreate,
     ProductUpdate,
     ProductCategoryCreate,
     ProductImageCreate,
+    ProductReviewCreate,
+    ProductReviewUpdate,
 )
 
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
-    def get_products(
+    def get_all_products(
         self, search: str | None, skip=0, limit=10
     ) -> Union[List[Product], None]:
 
@@ -27,6 +31,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
             .order_by(desc(self.model.created_timestamp))
             .offset(skip)
             .limit(limit)
+            # .options(sqlalchemy.orm.joinedload(self.model.reviews))
         ).all()
 
         return product_query if product_query else None
@@ -65,6 +70,12 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         return query_result
 
 
+class CRUDProductReview(
+    CRUDBase[ProductReview, ProductReviewCreate, ProductReviewUpdate]
+):
+    pass
+
+
 class CRUDProductImage(CRUDBase[ProductImage, ProductImageCreate, ProductImageCreate]):
     pass
 
@@ -95,3 +106,7 @@ def get_crud_product_image(db=Depends(get_db)) -> CRUDProductImage:
 
 def get_crud_product_category(db=Depends(get_db)) -> CRUDProductCategory:
     return CRUDProductCategory(db=db, model=ProductCategory)
+
+
+def get_crud_product_review(db=Depends(get_db)) -> CRUDProductReview:
+    return CRUDProductReview(db=db, model=ProductReview)

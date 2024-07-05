@@ -3,7 +3,7 @@ from typing import List, Tuple
 from crud import CRUDProduct
 from crud import CRUDCustomer, CRUDShippingDetails, CRUDOrderItem, CRUDCart
 from models import Product
-from models.orders import Order
+from models.order import Order
 from schemas import ShippingDetailsCreate, OrderItemsCreate
 
 

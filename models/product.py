@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import ClassVar
 
-from core.db import Base
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     TEXT,
     Boolean,
@@ -14,7 +14,8 @@ from sqlalchemy import (
     text,
     Float,
 )
-from sqlalchemy.orm import relationship
+
+from core.db import Base
 
 
 class Product(Base):
@@ -33,7 +34,7 @@ class Product(Base):
     product_status = Column(Boolean, nullable=False)
     long_description = Column(TEXT, nullable=True)
     stock = Column(Integer, nullable=False)
-    price = Column(Float, nullable=False)
+    price = Column(Integer, nullable=False)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)
     product_category_id = Column(
@@ -46,6 +47,7 @@ class Product(Base):
         "ProductImage", back_populates="product", cascade="all, delete-orphan"
     )
     category = relationship("ProductCategory", back_populates="products")
+    reviews = relationship("ProductReview")
 
 
 class ProductCategory(Base):
@@ -72,3 +74,17 @@ class ProductImage(Base):
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)
     product = relationship(Product, back_populates="product_images")
+
+
+class ProductReview(Base):
+    __tablename__ = "product_reviews"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    product_id = Column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    review = Column(
+        String(length=200),
+        nullable=False,
+    )
+    rating = Column(Float, nullable=False)
+    created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    updated_timestamp = Column(DateTime, nullable=True)

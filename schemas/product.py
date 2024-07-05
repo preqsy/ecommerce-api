@@ -45,6 +45,10 @@ class ProductReturn(ReturnBaseModel, ProductCreate):
     category: ProductCategoryReturn
 
 
+class ProductsReturn(ProductReturn):
+    reviews: Optional[list["ProductReviewReturn"]] = []
+
+
 class ProductUpdate(ProductOptionalBase):
     product_name: Optional[str] = None
     short_description: Optional[str] = None
@@ -66,3 +70,26 @@ class ProductImageUpdateReturn(ProductImageUpdate):
 class ProductUpdateReturn(ProductUpdate):
     created_timestamp: Optional[datetime] = None
     updated_timestamp: Optional[datetime] = None
+
+
+class ProductReviewCreate(BaseModel):
+    product_id: int
+    review: str
+    rating: float = Field(ge=0, le=5)
+
+
+class ProductReviewUpdate(BaseModel):
+    review: Optional[str] = None
+    rating: Optional[float] = Field(default=None, ge=0, le=5)
+
+
+class ProductReviewUpdateReturn(BaseModel):
+    review: Optional[str] = None
+    rating: Optional[float] = Field(default=None, ge=0, le=5)
+    updated_timestamp: datetime
+
+
+class ProductReviewReturn(ReturnBaseModel):
+    product_id: int
+    review: str
+    rating: float = Field(ge=0, le=5)

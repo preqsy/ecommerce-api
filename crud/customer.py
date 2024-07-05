@@ -2,7 +2,7 @@ from fastapi import Depends
 
 from core.db import get_db
 from crud.base import CRUDBase
-from models.auth_user import Customer
+from models import Customer
 from schemas import CustomerCreate
 
 
