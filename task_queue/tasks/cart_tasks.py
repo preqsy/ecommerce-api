@@ -59,7 +59,7 @@ async def update_stock_after_checkout(ctx, order_id):
     crud_order_item: CRUDOrderItem = ctx["crud_order_item"]
     crud_product: CRUDProduct = ctx["crud_product"]
 
-    order_items = crud_order_item.get_by_order_id(order_id)
+    order_items = await crud_order_item.get_by_order_id(order_id)
     product_id_and_quantity: List[Tuple[int]] = [
         (item.product_id, item.quantity) for item in order_items
     ]
