@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from models import auth_user, product, cart, orders
+from models import auth_user, order, product, cart, customer, vendor
 from core.db import engine
 from core.middleware import start_up_db
 from endpoints import (
@@ -14,7 +14,9 @@ from endpoints import (
 auth_user.Base.metadata.create_all(bind=engine)
 product.Base.metadata.create_all(bind=engine)
 cart.Base.metadata.create_all(bind=engine)
-orders.Base.metadata.create_all(bind=engine)
+order.Base.metadata.create_all(bind=engine)
+customer.Base.metadata.create_all(bind=engine)
+vendor.Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()

@@ -2,7 +2,7 @@ from fastapi import Depends
 
 from core.db import get_db
 from crud.base import CRUDBase
-from models.auth_user import Vendor
+from models import Vendor
 from schemas import VendorCreate
 
 

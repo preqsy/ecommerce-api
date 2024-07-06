@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from core import settings
-from models import auth_user, product, cart, orders
+from models import auth_user, order, product, cart, customer, vendor
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,7 +24,9 @@ if config.config_file_name is not None:
 target_metadata = auth_user.Base.metadata
 target_metadata = product.Base.metadata
 target_metadata = cart.Base.metadata
-target_metadata = orders.Base.metadata
+target_metadata = order.Base.metadata
+target_metadata = customer.Base.metadata
+target_metadata = vendor.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

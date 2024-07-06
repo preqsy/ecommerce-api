@@ -2,14 +2,16 @@ from arq import ArqRedis
 from fastapi import Depends, APIRouter, Query, status
 
 from core.errors import InvalidRequest, MissingResources
-from core.tokens import get_current_verified_vendor
+from core.tokens import get_current_verified_customer, get_current_verified_vendor
 from crud import (
     CRUDProduct,
     CRUDProductCategory,
     CRUDProductImage,
+    CRUDProductReview,
     get_crud_product,
     get_crud_product_category,
     get_crud_product_image,
+    get_crud_product_review,
 )
 from models import AuthUser, ProductCategory
 from schemas import (
@@ -19,6 +21,11 @@ from schemas import (
     ProductUpdateReturn,
     ProductImageUpdate,
     ProductImageUpdateReturn,
+    ProductReviewCreate,
+    ProductsReturn,
+    ProductReviewReturn,
+    ProductReviewUpdate,
+    ProductReviewUpdateReturn,
 )
 from task_queue.main import get_queue_connection
 from utils.generate_sku import generate_random_sku
@@ -57,7 +64,10 @@ async def create_product(
     return product
 
 
-@router.get("", response_model=list[ProductReturn])
+# @router.get(
+#     "",
+# )
+@router.get("", response_model=list[ProductsReturn])
 def get_products_customer(
     search: str = Query(
         default="", max_length=20, description="Search products with name or category"
@@ -66,7 +76,7 @@ def get_products_customer(
     limit: int = Query(default=20),
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
-    products = crud_product.get_products(search=search, skip=skip, limit=limit)
+    products = crud_product.get_all_products(search=search, skip=skip, limit=limit)
     if not products:
         raise MissingResources("No Products")
     return products
@@ -168,3 +178,35 @@ async def delete_product(
     if product.vendor_id != current_user.role_id:
         raise InvalidRequest("Product doesn't belong to you")
     await crud_product.delete(id)
+
+
+@router.post(
+    "/add-review",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProductReviewReturn,
+)
+async def create_product_review(
+    data_obj: ProductReviewCreate,
+    current_user: AuthUser = Depends(get_current_verified_customer),
+    crud_product: CRUDProduct = Depends(get_crud_product),
+    crud_product_review: CRUDProductReview = Depends(get_crud_product_review),
+):
+    crud_product.get_or_raise_exception(id=data_obj.product_id)
+    product_review = await crud_product_review.create(data_obj)
+    return product_review
+
+
+@router.put(
+    "/edit-review/{review_id}",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProductReviewUpdateReturn,
+)
+async def update_product_review(
+    review_id: int,
+    data_obj: ProductReviewUpdate,
+    current_user: AuthUser = Depends(get_current_verified_customer),
+    crud_product_review: CRUDProductReview = Depends(get_crud_product_review),
+):
+    review = crud_product_review.get_or_raise_exception(id=review_id)
+    updated_review = await crud_product_review.update(id=review.id, data_obj=data_obj)
+    return updated_review

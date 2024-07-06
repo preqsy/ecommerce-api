@@ -3,7 +3,7 @@ from typing import List, Tuple
 from crud import CRUDProduct
 from crud import CRUDCustomer, CRUDShippingDetails, CRUDOrderItem, CRUDCart
 from models import Product
-from models.orders import Order
+from models.order import Order
 from schemas import ShippingDetailsCreate, OrderItemsCreate
 
 
@@ -52,7 +52,7 @@ async def add_order_items(ctx, order: Order):
             product_id=product.id,
         )
         await crud_order_item.create(order_item)
-        return
+    return
 
 
 async def update_stock_after_checkout(ctx, order_id):
@@ -67,4 +67,4 @@ async def update_stock_after_checkout(ctx, order_id):
         product = crud_product.get_or_raise_exception(id=product_id)
         quantity = product.stock - cart_item_quantity
         await crud_product.update(id=product_id, data_obj={Product.STOCK: quantity})
-        return
+    return

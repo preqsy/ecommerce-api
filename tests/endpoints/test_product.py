@@ -11,6 +11,10 @@ from tests.sample_datas.samples import (
     sample_product_create_second,
     sample_product_create_third,
     sample_product_image_update,
+    sample_product_review_create,
+    sample_product_review_create_invalid_rating,
+    sample_product_review_create_nonexistent_product_id,
+    sample_product_review_update,
     sample_product_update,
 )
 
@@ -295,3 +299,108 @@ async def test_delete_product_invalid_id(
     rsp = await client.delete("/products/10")
 
     assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_create_product_review_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+    rsp = await client.post(
+        "/products/add-review",
+        json=sample_product_review_create(),
+    )
+
+    assert rsp.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.asyncio
+async def test_update_product_review_success(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+    await client.post(
+        "/products/add-review",
+        json=sample_product_review_create(),
+    )
+    rsp = await client.put(
+        "/products/edit-review/1",
+        json=sample_product_review_update(),
+    )
+
+    assert rsp.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.asyncio
+async def test_update_product_review_nonexistent_review_id(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+    await client.post(
+        "/products/add-review",
+        json=sample_product_review_create(),
+    )
+    rsp = await client.put(
+        "/products/edit-review/10",
+        json=sample_product_review_update(),
+    )
+
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_create_product_review_nonexistent_product_id(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.post(
+        "/products/add-review",
+        json=sample_product_review_create_nonexistent_product_id(),
+    )
+
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_create_product_review_invalid_rating(
+    client,
+    database_override_dependencies,
+    get_current_verified_role_override_dependency,
+):
+    await create_product(
+        client,
+        database_override_dependencies,
+        get_current_verified_role_override_dependency,
+    )
+
+    rsp = await client.post(
+        "/products/add-review",
+        json=sample_product_review_create_invalid_rating(),
+    )
+
+    assert rsp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

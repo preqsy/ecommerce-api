@@ -21,7 +21,7 @@ from tests.sample_datas.samples import (
     sample_get_verified_vendor,
 )
 from tests.sample_datas.testdb import engine, mock_get_db
-from models import auth_user, product, cart as cartmodel, AuthUser, orders
+from models import auth_user, order, product, cart as cartmodel, AuthUser
 from .mock_dependencies import (
     mock_crud_auth_user,
     mock_crud_customer,
@@ -37,12 +37,12 @@ def client():
     auth_user.Base.metadata.drop_all(bind=engine)
     product.Base.metadata.drop_all(bind=engine)
     cartmodel.Base.metadata.drop_all(bind=engine)
-    orders.Base.metadata.drop_all(bind=engine)
+    order.Base.metadata.drop_all(bind=engine)
     # Creat tables
     auth_user.Base.metadata.create_all(bind=engine)
     product.Base.metadata.create_all(bind=engine)
     cartmodel.Base.metadata.create_all(bind=engine)
-    orders.Base.metadata.create_all(bind=engine)
+    order.Base.metadata.create_all(bind=engine)
     client = AsyncClient(app=app, base_url="https://127.0.0.1/")
     yield client
 

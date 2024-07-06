@@ -13,7 +13,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, model: Type[ModelType], db: Session = Depends(get_db)):
+    def __init__(self, model: Type[ModelType], db: Session):
         self._db = db
         self.model = model
 

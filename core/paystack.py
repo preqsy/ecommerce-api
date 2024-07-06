@@ -2,8 +2,7 @@ from httpx import AsyncClient
 import logging
 
 from core import settings
-from models.auth_user import Customer
-from models.orders import Order
+from models import Customer, Order
 
 logger = logging.getLogger(__name__)
 
