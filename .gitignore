@@ -2,4 +2,4 @@
 .env
 __pycache__
 application.log
-tests/endpoints/test_auth.py
+dump.rdb
