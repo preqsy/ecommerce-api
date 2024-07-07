@@ -64,9 +64,6 @@ async def create_product(
     return product
 
 
-# @router.get(
-#     "",
-# )
 @router.get("", response_model=list[ProductsReturn])
 def get_products_customer(
     search: str = Query(

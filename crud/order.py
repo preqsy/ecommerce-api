@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List, Union
 from fastapi import Depends
 import sqlalchemy
@@ -36,6 +37,29 @@ class CRUDOrder(CRUDBase[Order, CheckoutCreate, CheckoutCreate]):
 class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
     def get_by_order_id(self, order_id: int) -> Union[List[OrderItem], None]:
         query = self._db.query(self.model).filter(self.model.order_id == order_id).all()
+        return query if query else None
+
+    async def get_order_items_by_vendor_id(
+        self, vendor_id
+    ) -> Union[List[OrderItem], None]:
+        query = (
+            self._db.query(self.model).filter(self.model.vendor_id == vendor_id).all()
+        )
+        return query if query else None
+
+    async def get_order_items_by_vendor_id_and_date(
+        self, vendor_id, days: int = 30, limit: int = 20, skip: int = 0
+    ) -> Union[List[OrderItem], None]:
+        query_date = datetime.utcnow() - timedelta(days=days)
+
+        query = (
+            self._db.query(self.model)
+            .filter(self.model.vendor_id == vendor_id)
+            .filter(self.model.created_timestamp >= query_date)
+            .limit(limit)
+            .offset(skip)
+            .all()
+        )
         return query if query else None
 
 
