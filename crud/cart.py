@@ -27,7 +27,7 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
         self,
         customer_id: int,
     ) -> Dict:
-        cart_items = self.get_cart_items(customer_id)
+        cart_items = self.get_cart_items_by_customer_id(customer_id)
         if not cart_items:
             raise MissingResources("No items in cart")
 
