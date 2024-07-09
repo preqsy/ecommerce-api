@@ -99,7 +99,7 @@ async def clear_cart(
     crud_cart: CRUDCart = Depends(get_crud_cart),
 ):
 
-    await crud_cart.delete_cart(current_user.role_id)
+    await crud_cart.clear_cart(current_user.role_id)
 
 
 @router.get("/summary", response_model=CartSummary)

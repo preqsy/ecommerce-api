@@ -1,40 +1,27 @@
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Optional
 from fastapi import Depends
 
 from core.db import get_db
 from core.errors import InvalidRequest, MissingResources
 from crud.base import CRUDBase
-from models.cart import Cart
-from models.product import Product
-from schemas import CartCreate
-from schemas.cart import CartUpdate
+from models import Cart, Product
+from schemas import CartCreate, CartUpdate
 
 
 class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
-    def get_cart_items(self, customer_id) -> Union[List, None]:
-        cart_details = (
-            self._db.query(self.model)
-            .filter(self.model.customer_id == customer_id)
-            .all()
-        )
-        if not cart_details:
-            return None
-        return cart_details
 
-    async def delete_cart(self, id) -> bool:
+    async def clear_cart(self, id):
         cart_query = self._db.query(self.model).filter(self.model.customer_id == id)
         cart_query.delete(synchronize_session=False)
         self._db.commit()
-        return
 
-    async def delete_cart_item_by_product_id(self, product_id) -> bool:
+    async def delete_cart_item_by_product_id(self, product_id):
         cart_query = self._db.query(self.model).filter(
             self.model.product_id == product_id
         )
         cart_query.delete(synchronize_session=False)
         self._db.commit()
-        return
 
     async def get_cart_summary(
         self,
@@ -55,29 +42,26 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
 
         return summary
 
-    def get_by_product_id(self, product_id: int) -> Cart:
+    def get_by_product_id(self, product_id: int) -> Optional[Cart]:
         query_result = (
             self._db.query(self.model)
             .filter(self.model.product_id == product_id)
             .first()
         )
-        if not query_result:
-            return None
-        return query_result
 
-    def get_cart_items_by_customer_id(self, customer_id: int) -> List[Cart]:
+        return query_result if query_result else None
+
+    def get_cart_items_by_customer_id(self, customer_id: int) -> Optional[List[Cart]]:
         query_result = (
             self._db.query(self.model)
             .filter(self.model.customer_id == customer_id)
             .all()
         )
-        if not query_result:
-            return None
-        return query_result
+        return query_result if query_result else None
 
     async def update_cart_by_customer_id(
-        self, customer_id, product_id, data_obj: CartUpdate
-    ) -> Dict[str, Any]:
+        self, customer_id: int, product_id: int, data_obj: CartUpdate
+    ) -> Dict:
         query = (
             self._db.query(self.model)
             .filter(self.model.customer_id == customer_id)

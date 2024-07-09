@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import Any, Dict, Generic, Type, TypeVar, Union
-from fastapi import Depends
+from typing import Any, Dict, Generic, Optional, Type, TypeVar, Union
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from core.db import Base, get_db
+from core.db import Base
 from core.errors import MissingResources
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -23,13 +22,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             raise MissingResources
         return query_result
 
-    def get_by_auth_id(self, auth_id) -> ModelType:
+    def get_by_auth_id(self, auth_id) -> Optional[ModelType]:
         query_result = (
             self._db.query(self.model).filter(self.model.auth_id == auth_id).first()
         )
-        if not query_result:
-            return None
-        return query_result
+        return query_result if query_result else None
 
     def _get_query_by_id(self, id):
         query_result = self._db.query(self.model).filter(self.model.id == id)
@@ -74,13 +71,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._db.commit()
         return data_dict
 
-    def get_by_username(self, username: str) -> str:
-        username = (
+    def get_by_username(self, username: str) -> bool:
+        username_query = (
             self._db.query(self.model).filter(self.model.username == username).first()
         )
-        if not username:
-            return None
-        return username.username
+        if not username_query:
+            return False
+        return True
 
     async def delete_by_auth_id(self, auth_id):
         query = (

@@ -82,7 +82,9 @@ def verify_access_token(token):
     return token_data
 
 
-def get_current_auth_user(token=Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_auth_user(
+    token=Depends(oauth2_scheme), db: Session = Depends(get_db)
+) -> AuthUser:
     token = verify_access_token(token)
     auth_user = db.query(AuthUser).filter(AuthUser.id == token.user_id).first()
     if not auth_user or not auth_user.email_verified:
@@ -93,7 +95,7 @@ def get_current_auth_user(token=Depends(oauth2_scheme), db: Session = Depends(ge
 def get_current_verified_vendor(
     token=Depends(oauth2_scheme),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
-):
+) -> AuthUser:
     token = verify_access_token(token)
     auth_user = crud_auth_user.get_or_raise_exception(id=token.user_id)
     if not (auth_user.default_role == Roles.VENDOR):
@@ -106,7 +108,7 @@ def get_current_verified_vendor(
 def get_current_verified_customer(
     token=Depends(oauth2_scheme),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
-):
+) -> AuthUser:
     token = verify_access_token(token)
     auth_user = crud_auth_user.get_or_raise_exception(id=token.user_id)
     if not (auth_user.default_role == Roles.CUSTOMER):
