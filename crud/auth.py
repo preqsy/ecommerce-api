@@ -1,20 +1,20 @@
+from typing import Optional
 from fastapi import Depends
 from pydantic import EmailStr
+
 from core.db import get_db
 from core.schema import RefreshTokenCreate
 from crud.base import CRUDBase
-from models.auth_user import AuthUser, RefreshToken
+from models import AuthUser, RefreshToken
 from schemas import AuthUserCreate
 
 
 class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
-    def get_by_email(self, email: EmailStr) -> AuthUser:
+    def get_by_email(self, email: EmailStr) -> Optional[AuthUser]:
         email_query = (
             self._db.query(self.model).filter(self.model.email == email).first()
         )
-        if not email_query:
-            return None
-        return email_query
+        return email_query if email_query else None
 
 
 class CRUDRefreshToken(CRUDBase[RefreshToken, RefreshTokenCreate, RefreshTokenCreate]):

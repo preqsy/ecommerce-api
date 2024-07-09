@@ -7,7 +7,7 @@ env_path = path / ".env"
 
 class PaystackConfig(BaseSettings):
     BASE_URL: str = "https://api.paystack.co/"
-    SECRET_KEY: str
+    SECRET_KEY: str = ""
     CALLBACK_URL: str = "https://127.0.0.0.1:8000/cart/checkout"
 
     class Config:
@@ -18,15 +18,15 @@ class PaystackConfig(BaseSettings):
 
 
 class Settings(BaseSettings):
-    SQLALCHEMY_DATABASE_URL: str
-    TEST_SQLALCHEMY_DATABASE_URL: str
-    JWT_SECRET_KEY: str
-    ALGORITHM: str
+    SQLALCHEMY_DATABASE_URL: str = ""
+    TEST_SQLALCHEMY_DATABASE_URL: str = ""
+    JWT_SECRET_KEY: str = ""
+    ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRY_TIME: int = 20
     REFRESH_TOKEN_EXPIRY_TIME: int = 30
     FORGET_PASSWORD_EXPIRY_TIME: int = 5
-    STRIPE_PUBLISHABLE_KEY: str
-    STRIPE_SECRET_KEY: str
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_SECRET_KEY: str = ""
     paystack_config: PaystackConfig = PaystackConfig()
 
     class Config:
