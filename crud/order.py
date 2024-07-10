@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Union
+from typing import List, Optional
 from fastapi import Depends
 import sqlalchemy
 import sqlalchemy.orm
@@ -30,18 +30,16 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
         )
         return query
 
-    async def delete_all_order(self):
-        query = self._db.query(self.model).delete()
-
 
 class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
-    def get_by_order_id(self, order_id: int) -> Union[List[OrderItem], None]:
+
+    def get_by_order_id(self, order_id: int) -> Optional[List[OrderItem]]:
         query = self._db.query(self.model).filter(self.model.order_id == order_id).all()
         return query if query else None
 
     async def get_order_items_by_vendor_id(
         self, vendor_id
-    ) -> Union[List[OrderItem], None]:
+    ) -> Optional[List[OrderItem]]:
         query = (
             self._db.query(self.model)
             .filter(self.model.vendor_id == vendor_id)
@@ -54,7 +52,7 @@ class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
 
     async def get_order_items_by_vendor_id_and_date(
         self, vendor_id, days: int = 30, limit: int = 20, skip: int = 0
-    ) -> Union[List[OrderItem], None]:
+    ) -> Optional[List[OrderItem]]:
         query_date = datetime.utcnow() - timedelta(days=days)
 
         query = (
@@ -77,7 +75,8 @@ class CRUDShippingDetails(
 class CRUDPaymentDetails(
     CRUDBase[PaymentDetails, PaymentDetailsCreate, PaymentDetailsCreate]
 ):
-    def get_by_payment_ref(self, payment_ref) -> Union[PaymentDetails, None]:
+
+    def get_by_payment_ref(self, payment_ref) -> Optional[PaymentDetails]:
         query = (
             self._db.query(self.model)
             .filter(self.model.payment_ref == payment_ref)

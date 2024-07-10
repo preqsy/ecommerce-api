@@ -30,11 +30,11 @@ class AuthUserResponse(ReturnBaseModel):
 
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    email: EmailStr = None
+    email: EmailStr
     phone_number: Optional[str] = None
     email_verified: Optional[bool] = None
     phone_verified: Optional[bool] = None
-    default_role: Roles = None
+    default_role: Roles
     is_superuser: bool = Field(False, hidden_from_schema=True)
 
 

@@ -22,6 +22,7 @@ requests = "^2.32.3"
 stripe = "^9.11.0"
 arq = "^0.26.0"
 factory-boy = "^3.3.0"
+mypy = "^1.10.1"
 
 
 [build-system]
