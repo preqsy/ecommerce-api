@@ -51,6 +51,7 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
     id = Column(Integer, primary_key=True, nullable=False)
     auth_id: Column[int] = Column(
+
         ForeignKey("auth_details.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )

@@ -16,7 +16,7 @@ class Vendor(Base):
     __tablename__ = "vendors"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    auth_id = Column(
+    auth_id: Column[int] = Column(
         ForeignKey(column="auth_details.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -38,10 +38,21 @@ class VendorRating(Base):
     __tablename__ = "vendor_ratings"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    vendor_id = Column(ForeignKey("vendors.id", ondelete="CASCADE"), nullable=False)
+    vendor_id: Column[int] = Column(
+        ForeignKey("vendors.id", ondelete="CASCADE"), nullable=False
+    )
     rating = Column(
         Integer,
         nullable=False,
     )
+    created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    updated_timestamp = Column(DateTime, nullable=True)
+
+
+class VendorOrders(Base):
+    __tablename__ = "vendor_orders"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    order_item = Column(String, nullable=False)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)

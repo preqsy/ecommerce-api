@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from typing import Dict, List, Optional
 from fastapi import Depends
 
@@ -42,10 +43,12 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
 
         return summary
 
-    def get_by_product_id(self, product_id: int) -> Optional[Cart]:
+    def get_by_product_id(self, product_id: int, customer_id: int) -> Optional[Cart]:
+
         query_result = (
             self._db.query(self.model)
             .filter(self.model.product_id == product_id)
+            .filter(self.model.customer_id == customer_id)
             .first()
         )
 
