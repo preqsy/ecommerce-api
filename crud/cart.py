@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from fastapi import Depends
 
 from core.db import get_db
@@ -55,15 +55,15 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
 
         return summary
 
-    def get_by_product_id(self, product_id: int) -> Cart:
+    def get_by_product_id(self, product_id: int, customer_id: int) -> Optional[Cart]:
         query_result = (
             self._db.query(self.model)
             .filter(self.model.product_id == product_id)
+            .filter(self.model.customer_id == customer_id)
             .first()
         )
-        if not query_result:
-            return None
-        return query_result
+
+        return query_result if query_result else None
 
     def get_cart_items_by_customer_id(self, customer_id: int) -> List[Cart]:
         query_result = (

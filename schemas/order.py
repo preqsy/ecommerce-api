@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
-from schemas.base import PaymentMethodEnum, StatusEnum
+from schemas.base import PaymentMethodEnum, ReturnBaseModel, StatusEnum
+from schemas import CustomerReturn
 
 
 class OrderCreate(BaseModel):
@@ -11,12 +12,24 @@ class OrderCreate(BaseModel):
     total_amount: Optional[float] = None
 
 
+class OrderReturn(ReturnBaseModel):
+    customer_id: Optional[int] = None
+    status: StatusEnum = StatusEnum.PROCESSING
+    total_amount: Optional[float] = None
+    order_date: Optional[datetime] = None
+    customer: CustomerReturn
+
+
 class OrderItemsCreate(BaseModel):
-    order_id: Optional[int] = None
-    vendor_id: Optional[int] = None
-    product_id: Optional[int] = None
-    price: Optional[int] = None
-    quantity: Optional[int] = None
+    order_id: int
+    vendor_id: int
+    product_id: int
+    price: int
+    quantity: int
+
+
+class OrderItemsReturn(ReturnBaseModel, OrderItemsCreate):
+    "Return Schema for Items In an Order"
 
 
 class PaymentDetailsCreate(BaseModel):

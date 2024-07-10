@@ -20,6 +20,7 @@ from schemas import (
     VendorCreate,
     VendorReturn,
     TotalSalesReturn,
+    OrdersWithCustomerDetails,
 )
 
 from schemas.base import RoleAuthDetailsUpdate, Roles
@@ -93,5 +94,19 @@ async def get_sales_activity_by_date(
     if not order_items:
         raise InvalidRequest("No Orders Completed Yet")
     total_sales = sum([item.price * item.quantity for item in order_items])
-    total_sales = {"total_sales": total_sales, "total_orders": len(order_items)}
-    return total_sales
+    total_sales_and_quantity = {
+        "total_sales": total_sales,
+        "total_orders": len(order_items),
+    }
+    return total_sales_and_quantity
+
+
+@router.get("/orders", response_model=list[OrdersWithCustomerDetails])
+async def get_vendors_orders(
+    current_user: AuthUser = Depends(get_current_verified_vendor),
+    crud_order_item: CRUDOrderItem = Depends(get_crud_order_item),
+):
+    order_items = await crud_order_item.get_order_items_by_vendor_id(
+        vendor_id=current_user.role_id
+    )
+    return order_items

@@ -8,14 +8,14 @@ from core.db import get_db
 from crud.base import CRUDBase
 from models import Order, OrderItem, ShippingDetails, PaymentDetails
 from schemas import (
-    CheckoutCreate,
+    OrderCreate,
     PaymentDetailsCreate,
     OrderItemsCreate,
     ShippingDetailsCreate,
 )
 
 
-class CRUDOrder(CRUDBase[Order, CheckoutCreate, CheckoutCreate]):
+class CRUDOrder(CRUDBase[Order, OrderCreate, OrderCreate]):
 
     async def get_all_orders(self) -> List[Order]:
         query = (
@@ -24,7 +24,7 @@ class CRUDOrder(CRUDBase[Order, CheckoutCreate, CheckoutCreate]):
                 sqlalchemy.orm.joinedload(Order.order_items),
                 sqlalchemy.orm.joinedload(Order.payment_details),
                 sqlalchemy.orm.joinedload(Order.shipping_details),
-                sqlalchemy.orm.joinedload(Order.order_status),
+                sqlalchemy.orm.joinedload(Order.customer),
             )
             .all()
         )
@@ -43,7 +43,12 @@ class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
         self, vendor_id
     ) -> Union[List[OrderItem], None]:
         query = (
-            self._db.query(self.model).filter(self.model.vendor_id == vendor_id).all()
+            self._db.query(self.model)
+            .filter(self.model.vendor_id == vendor_id)
+            .options(
+                sqlalchemy.orm.joinedload(self.model.order).joinedload(Order.customer)
+            )
+            .all()
         )
         return query if query else None
 

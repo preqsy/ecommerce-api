@@ -10,13 +10,14 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import relationship
+from .customer import Customer
 
 
 class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, nullable=False)
 
-    customer_id = Column(
+    customer_id: Column[int] = Column(
         ForeignKey(column="customers.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=True,
     )
@@ -30,21 +31,22 @@ class Order(Base):
         "PaymentDetails", back_populates="order", uselist=False
     )
     shipping_details = relationship("ShippingDetails", back_populates="order")
+    customer = relationship(Customer)
 
 
 class OrderItem(Base):
     __tablename__ = "order_items"
     id = Column(Integer, primary_key=True, nullable=False)
 
-    order_id = Column(
+    order_id: Column[int] = Column(
         ForeignKey("orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    product_id = Column(
+    product_id: Column[int] = Column(
         ForeignKey("products.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    vendor_id = Column(
+    vendor_id: Column[int] = Column(
         ForeignKey("vendors.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -59,7 +61,7 @@ class OrderItem(Base):
 class PaymentDetails(Base):
     __tablename__ = "payment_details"
     id = Column(Integer, primary_key=True, nullable=False)
-    order_id = Column(
+    order_id: Column[int] = Column(
         ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         unique=True,
@@ -78,7 +80,7 @@ class PaymentDetails(Base):
 class ShippingDetails(Base):
     __tablename__ = "shipping_details"
     id = Column(Integer, primary_key=True, nullable=False)
-    order_id = Column(
+    order_id: Column[int] = Column(
         ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )

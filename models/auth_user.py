@@ -49,8 +49,8 @@ class AuthUser(Base):
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
-    id = id = Column(Integer, primary_key=True, nullable=False)
-    auth_id = Column(
+    id = Column(Integer, primary_key=True, nullable=False)
+    auth_id: Column[int] = Column(
         ForeignKey(column="auth_details.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -65,8 +65,8 @@ class RefreshToken(Base):
 
 class OTP(Base):
     __tablename__ = "otp"
-    id = id = Column(Integer, primary_key=True, nullable=False)
-    auth_id = Column(
+    id = Column(Integer, primary_key=True, nullable=False)
+    auth_id: Column[int] = Column(
         ForeignKey(column="auth_details.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )

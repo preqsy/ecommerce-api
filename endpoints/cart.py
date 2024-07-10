@@ -46,7 +46,10 @@ async def create_cart(
     crud_product: CRUDProduct = Depends(get_crud_product),
 ):
     product = crud_product.get_or_raise_exception(data_obj.product_id)
-    cart_item = crud_cart.get_by_product_id(product_id=data_obj.product_id)
+    cart_item = crud_cart.get_by_product_id(
+        product_id=data_obj.product_id, customer_id=current_user.role_id
+    )
+
     if cart_item and cart_item.customer_id == current_user.role_id:
         raise InvalidRequest("Already add item to cart")
     data_obj.customer_id = current_user.role_id
@@ -168,7 +171,7 @@ async def checkout(
     return order
 
 
-@router.get("/order")
+@router.get("/orders")
 async def get_all_orders(crud_order: CRUDOrder = Depends(get_crud_order)):
     return await crud_order.get_all_orders()
 
