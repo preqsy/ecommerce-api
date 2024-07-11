@@ -45,7 +45,7 @@ async def add_order_items(ctx, order: Order):
     ]
     for product, quantity in products_and_quantity_in_cart_tuple:
         order_item = OrderItemsCreate(
-            order_id=order.id,
+            order_id=order.id,  # type: ignore
             vendor_id=product.vendor_id,
             price=product.price,
             quantity=quantity,

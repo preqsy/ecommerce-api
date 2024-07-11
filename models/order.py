@@ -17,7 +17,8 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, nullable=False)
 
-    customer_id: Column[int] = Column(
+    customer_id = Column(
+        Integer,
         ForeignKey(column="customers.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=True,
     )
@@ -38,18 +39,22 @@ class OrderItem(Base):
     __tablename__ = "order_items"
     id = Column(Integer, primary_key=True, nullable=False)
 
-    order_id: Column[int] = Column(
+    order_id = Column(
+        Integer,
         ForeignKey("orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    product_id: Column[int] = Column(
+    product_id = Column(
+        Integer,
         ForeignKey("products.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
-    vendor_id: Column[int] = Column(
+    vendor_id = Column(
+        Integer,
         ForeignKey("vendors.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
+    status = Column(String, default="processing")
     price = Column(Integer, nullable=False)
     quantity = Column(Integer, nullable=False)
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
@@ -61,7 +66,8 @@ class OrderItem(Base):
 class PaymentDetails(Base):
     __tablename__ = "payment_details"
     id = Column(Integer, primary_key=True, nullable=False)
-    order_id: Column[int] = Column(
+    order_id = Column(
+        Integer,
         ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         unique=True,
@@ -80,7 +86,8 @@ class PaymentDetails(Base):
 class ShippingDetails(Base):
     __tablename__ = "shipping_details"
     id = Column(Integer, primary_key=True, nullable=False)
-    order_id: Column[int] = Column(
+    order_id = Column(
+        Integer,
         ForeignKey(column="orders.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )

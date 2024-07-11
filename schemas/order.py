@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Optional
+from typing import ClassVar, Optional
 from pydantic import BaseModel
 
-from schemas.base import PaymentMethodEnum, ReturnBaseModel, StatusEnum
+from schemas.base import OrderStatusEnum, PaymentMethodEnum, ReturnBaseModel, StatusEnum
 from schemas import CustomerReturn
 
 
@@ -58,3 +58,9 @@ class CheckoutCreate(BaseModel):
 
 class PaymentVerified(BaseModel):
     payment_verified: bool = True
+
+
+class OrderItemStatus(BaseModel):
+    STATUS: ClassVar[str] = "status"
+
+    status: OrderStatusEnum = OrderStatusEnum.PROCESSING

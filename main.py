@@ -9,6 +9,7 @@ from endpoints import (
     auth_router,
     product_router,
     cart_router,
+    order_router,
 )
 
 auth_user.Base.metadata.create_all(bind=engine)
@@ -32,3 +33,4 @@ app.include_router(customer_router)
 app.include_router(vendor_router)
 app.include_router(product_router)
 app.include_router(cart_router)
+app.include_router(order_router)
