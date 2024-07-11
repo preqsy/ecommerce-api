@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import ClassVar
 
 from core.db import Base
 from sqlalchemy import (
@@ -15,6 +16,9 @@ from .customer import Customer
 
 class Order(Base):
     __tablename__ = "orders"
+
+    STATUS: ClassVar[str] = "status"
+
     id = Column(Integer, primary_key=True, nullable=False)
 
     customer_id = Column(

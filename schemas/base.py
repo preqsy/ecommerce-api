@@ -73,7 +73,7 @@ class StatusEnum(str, Enum):
 
 
 class OrderStatusEnum(str, Enum):
-    PROCESSING = "processsing"
+    PROCESSING = "processing"
     SHIPPED = "shipped"
     # DELIVERED = "delivered"
     REFUNDED = "refunded"
