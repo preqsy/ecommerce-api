@@ -25,6 +25,7 @@ class Product(Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     vendor_id = Column(
+        Integer,
         ForeignKey("vendors.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -38,6 +39,7 @@ class Product(Base):
     created_timestamp = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_timestamp = Column(DateTime, nullable=True)
     product_category_id = Column(
+        Integer,
         ForeignKey("product_category.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -68,6 +70,7 @@ class ProductImage(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     product_image = Column(String, nullable=False)
     product_id = Column(
+        Integer,
         ForeignKey("products.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -80,7 +83,9 @@ class ProductReview(Base):
     __tablename__ = "product_reviews"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    product_id = Column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(
+        Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+    )
     review = Column(
         String(length=200),
         nullable=False,

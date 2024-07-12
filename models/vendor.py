@@ -16,7 +16,8 @@ class Vendor(Base):
     __tablename__ = "vendors"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    auth_id: Column[int] = Column(
+    auth_id = Column(
+        Integer,
         ForeignKey(column="auth_details.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
@@ -38,8 +39,8 @@ class VendorRating(Base):
     __tablename__ = "vendor_ratings"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    vendor_id: Column[int] = Column(
-        ForeignKey("vendors.id", ondelete="CASCADE"), nullable=False
+    vendor_id = Column(
+        Integer, ForeignKey("vendors.id", ondelete="CASCADE"), nullable=False
     )
     rating = Column(
         Integer,

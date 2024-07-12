@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     TEST_SQLALCHEMY_DATABASE_URL: str = ""
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = ""
-    ACCESS_TOKEN_EXPIRY_TIME: int = 20
-    REFRESH_TOKEN_EXPIRY_TIME: int = 30
+    ACCESS_TOKEN_EXPIRY_TIME: int
+    REFRESH_TOKEN_EXPIRY_TIME: int
     FORGET_PASSWORD_EXPIRY_TIME: int = 5
     STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_SECRET_KEY: str = ""

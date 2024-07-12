@@ -15,6 +15,7 @@ from crud import (
     get_crud_shipping_details,
 )
 from crud.product import get_crud_product_image
+from task_queue.cron_jobs.main import get_cron_jobs
 from task_queue.tasks import registered_tasks
 from core.db import get_db
 
@@ -51,3 +52,4 @@ class WorkerSettings:
     on_shutdown = shutdown
     redis_settings = REDIS_SETTINGS
     functions = registered_tasks
+    cron_jobs = get_cron_jobs()

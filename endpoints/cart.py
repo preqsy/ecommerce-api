@@ -171,11 +171,6 @@ async def checkout(
     return order
 
 
-@router.get("/orders")
-async def get_all_orders(crud_order: CRUDOrder = Depends(get_crud_order)):
-    return await crud_order.get_all_orders()
-
-
 @router.get("/verify-payment/{payment_ref}", response_model=PaymentVerified)
 async def verify_order_payment(
     payment_ref: str,

@@ -15,9 +15,9 @@ class VendorCreate(CreateBaseModel):
 
 
 class VendorReturn(CustomerVendorReturnBase):
-
+    bio: str
     profile_picture: Optional[AnyHttpUrl] = None
-    ratings: Optional[int]
+    ratings: Optional[int] = None
 
 
 class TotalSalesReturn(BaseModel):

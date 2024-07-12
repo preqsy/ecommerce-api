@@ -72,6 +72,13 @@ class StatusEnum(str, Enum):
     PENDING = "pending"
 
 
+class OrderStatusEnum(str, Enum):
+    PROCESSING = "processing"
+    SHIPPED = "shipped"
+    # DELIVERED = "delivered"
+    REFUNDED = "refunded"
+
+
 class ProductOptionalBase(BaseModel):
     sku: Optional[str] = None
     product_category_id: Optional[int] = None
