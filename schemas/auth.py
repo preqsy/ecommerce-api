@@ -2,13 +2,17 @@ from typing import ClassVar, Optional
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
+from core.errors import InvalidRequest
 from core.schema import Tokens
 from schemas.base import ReturnBaseModel, Roles
+from utils.email_validation import email_validate
 from utils.validate_password import validate_password
 
 
 class AuthUserCreate(BaseModel):
     PASSWORD: ClassVar[str] = "password"
+    EMAIL: ClassVar[str] = "email"
+
     email: EmailStr
     password: str
     default_role: Roles
@@ -22,6 +26,15 @@ class AuthUserCreate(BaseModel):
             raise ValueError(
                 "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number or one special character"
             )
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_email(cls, values):
+        email = values.get(cls.EMAIL)
+        if not email_validate(email):
+            raise InvalidRequest("Invalid Email Format")
+
         return values
 
 

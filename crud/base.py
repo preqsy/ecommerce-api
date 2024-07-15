@@ -22,6 +22,24 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             raise MissingResources
         return query_result
 
+    def get(self, id: int) -> Optional[ModelType]:
+        query_result = self._db.query(self.model).filter(self.model.id == id).first()
+
+        return query_result if query_result else None
+
+    def get_multi(
+        self, id: int, skip: int = 0, limit: int = 20
+    ) -> Optional[list[ModelType]]:
+        query_result = (
+            self._db.query(self.model)
+            .filter(self.model.id == id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+        return query_result if query_result else None
+
     def get_by_auth_id(self, auth_id) -> Optional[ModelType]:
         query_result = (
             self._db.query(self.model).filter(self.model.auth_id == auth_id).first()
