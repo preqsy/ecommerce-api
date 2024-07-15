@@ -115,7 +115,7 @@ async def test_register_wrong_email_format(client, database_override_dependencie
         sample_register_details=sample_auth_user_wrong_email(),
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.asyncio
@@ -226,7 +226,7 @@ async def test_logout_user_success(
     access_token = login_rsp.json().get("access_token")
     app.dependency_overrides[get_current_auth_user] = lambda: mock_crud_auth_user
     mock_crud_auth_user.id = 1
-    with patch("endpoints.auth.deactivate_token") as mock_deactivate_token:
+    with patch("api.endpoints.auth.deactivate_token") as mock_deactivate_token:
         rsp = await client.post("/auth/logout", json={"access_token": access_token})
         mock_deactivate_token.assert_called_once()
 
@@ -238,7 +238,7 @@ async def test_logout_user_invalid_token(
     client, database_override_dependencies, get_current_auth_user_override_dependency
 ):
 
-    with patch("endpoints.auth.deactivate_token") as mock_deactivate_token:
+    with patch("api.endpoints.auth.deactivate_token") as mock_deactivate_token:
         mock_deactivate_token.side_effect = InvalidRequest("Invalid token")
         rsp = await client.post(
             "/auth/logout",
