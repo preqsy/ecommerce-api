@@ -12,8 +12,10 @@ from schemas import CartCreate, CartUpdate
 
 class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
 
-    async def clear_cart(self, id):
-        cart_query = self._db.query(self.model).filter(self.model.customer_id == id)
+    async def clear_cart(self, customer_id):
+        cart_query = self._db.query(self.model).filter(
+            self.model.customer_id == customer_id
+        )
         cart_query.delete(synchronize_session=False)
         self._db.commit()
 
@@ -43,7 +45,9 @@ class CRUDCart(CRUDBase[Cart, CartCreate, CartUpdate]):
 
         return summary
 
-    def get_by_product_id(self, product_id: int, customer_id: int) -> Optional[Cart]:
+    def get_by_product_id_and_customer_id(
+        self, product_id: int, customer_id: int
+    ) -> Optional[Cart]:
 
         query_result = (
             self._db.query(self.model)
