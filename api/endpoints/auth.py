@@ -26,7 +26,7 @@ from schemas import (
 )
 from models import AuthUser
 from services import AuthUserService
-from api.dependencies.services import auth_user_service
+from api.dependencies.services import get_auth_user_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -40,7 +40,7 @@ async def register_user(
     data_obj: AuthUserCreate,
     background_task: BackgroundTasks,
     user_agent: str = Header(None),
-    auth_user_service: AuthUserService = Depends(auth_user_service),
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
 ):
 
     return await auth_user_service.register_auth_user(
@@ -51,7 +51,7 @@ async def register_user(
 @router.post("/verify", response_model=OtpVerified)
 async def verify_email_or_phone(
     data_obj: OTPCreate,
-    auth_user_service: AuthUserService = Depends(auth_user_service),
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
 ):
 
     return await auth_user_service.verify(data_obj=data_obj)
@@ -61,7 +61,7 @@ async def verify_email_or_phone(
 async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_agent: str = Header(None),
-    auth_user_service: AuthUserService = Depends(auth_user_service),
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
 ):
 
     return await auth_user_service.login_user(
@@ -83,7 +83,7 @@ async def forget_password(
     data_obj: EmailIn,
     background_tasks: BackgroundTasks,
     user_agent: str = Header(None),
-    auth_user_service: AuthUserService = Depends(auth_user_service),
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
 ):
     return await auth_user_service.forget_password(
         data_obj, user_agent, background_tasks
@@ -94,7 +94,7 @@ async def forget_password(
 async def reset_password(
     data_obj: NewPassword,
     token: str = Query(),
-    auth_user_service: AuthUserService = Depends(auth_user_service),
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
 ):
 
     return await auth_user_service.reset_password(data_obj=data_obj, token=token)
@@ -124,7 +124,7 @@ async def refresh_access_token(
 async def change_password(
     data_obj: ChangePassword,
     current_user: AuthUser = Depends(get_current_auth_user),
-    auth_user_service: AuthUserService = Depends(auth_user_service),
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
 ):
     return await auth_user_service.change_password(
         data_obj=data_obj,
