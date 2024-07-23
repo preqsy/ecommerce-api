@@ -1,4 +1,4 @@
-from core.errors import InvalidRequest
+from core.errors import InvalidRequest, MissingResources
 from crud import (
     CRUDCustomer,
     CRUDOrder,
@@ -50,10 +50,12 @@ class OrderService:
         }
         return total_sales_and_quantity
 
-    async def get_vendors_orders(self, vendor_id: int):
+    async def get_vendors_order_items(self, vendor_id: int):
         order_items = await self.crud_order_item.get_order_items_by_vendor_id(
             vendor_id=vendor_id
         )
+        if not order_items:
+            raise MissingResources("No Orders completed yet")
         return order_items
 
     async def update_order_status(
@@ -66,6 +68,7 @@ class OrderService:
         if order_item.vendor_id != vendor_id:
             raise InvalidRequest("Not Your Item")
         if order_item.status == OrderStatusEnum.PROCESSING:
+
             return await self.crud_order_item.update(
                 id=order_item_id, data_obj={data_obj.STATUS: data_obj.status}
             )

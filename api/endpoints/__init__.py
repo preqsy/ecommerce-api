@@ -10,8 +10,8 @@ from .order import router as order_router
 
 router = APIRouter()
 
-router.include_router(customer_router)
 router.include_router(auth_router)
+router.include_router(customer_router)
 router.include_router(vendor_router)
 router.include_router(product_router)
 router.include_router(order_router)
