@@ -8,13 +8,13 @@ from schemas import CustomerReturn
 
 class OrderCreate(BaseModel):
     customer_id: Optional[int] = None
-    status: StatusEnum = StatusEnum.PROCESSING
+    status: OrderStatusEnum = OrderStatusEnum.PROCESSING
     total_amount: Optional[float] = None
 
 
 class OrderReturn(ReturnBaseModel):
     customer_id: Optional[int] = None
-    status: StatusEnum = StatusEnum.PROCESSING
+    status: OrderStatusEnum
     total_amount: Optional[float] = None
     order_date: Optional[datetime] = None
     customer: CustomerReturn
@@ -64,3 +64,13 @@ class OrderItemStatus(BaseModel):
     STATUS: ClassVar[str] = "status"
 
     status: OrderStatusEnum = OrderStatusEnum.PROCESSING
+
+
+class VendorOrderReturn(ReturnBaseModel):
+    vendor_id: int
+    price: int
+    product_id: int
+    order_id: int
+    quantity: int
+    status: OrderStatusEnum
+    order: OrderReturn

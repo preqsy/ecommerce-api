@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
+
 from fastapi import Depends
 import sqlalchemy
 import sqlalchemy.orm
@@ -38,7 +39,7 @@ class CRUDOrderItem(CRUDBase[OrderItem, OrderItemsCreate, OrderItemsCreate]):
         return query if query else None
 
     async def get_order_items_by_vendor_id(
-        self, vendor_id
+        self, vendor_id: int
     ) -> Optional[List[OrderItem]]:
         query = (
             self._db.query(self.model)
@@ -76,7 +77,7 @@ class CRUDPaymentDetails(
     CRUDBase[PaymentDetails, PaymentDetailsCreate, PaymentDetailsCreate]
 ):
 
-    def get_by_payment_ref(self, payment_ref) -> Optional[PaymentDetails]:
+    def get_by_payment_ref(self, payment_ref: str) -> Optional[PaymentDetails]:
         query = (
             self._db.query(self.model)
             .filter(self.model.payment_ref == payment_ref)
