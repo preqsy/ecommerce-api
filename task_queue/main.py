@@ -13,14 +13,15 @@ from crud import (
     get_crud_order_item,
     get_crud_payment_details,
     get_crud_shipping_details,
+    get_crud_product_image,
 )
-from crud.product import get_crud_product_image
 from task_queue.cron_jobs.main import get_cron_jobs
 from task_queue.tasks import registered_tasks
 from core.db import get_db
+from core import settings
 
 
-REDIS_SETTINGS = RedisSettings()
+REDIS_SETTINGS = RedisSettings(host=settings.REDIS_HOST)
 
 
 async def get_queue_connection():

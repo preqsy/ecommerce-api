@@ -20,6 +20,7 @@ class PaystackConfig(BaseSettings):
 class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URL: str = ""
     TEST_SQLALCHEMY_DATABASE_URL: str = ""
+    REDIS_HOST: str = "localhost"
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRY_TIME: int = 20
