@@ -94,3 +94,7 @@ class CustomerVendorReturnBase(ReturnBaseModel):
     state: str
     address: str
     is_superuser: Optional[bool] = None
+
+
+class HealthResponse(BaseModel):
+    msg: str
