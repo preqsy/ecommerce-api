@@ -21,7 +21,7 @@ from core.db import get_db
 from core import settings
 
 
-REDIS_SETTINGS = RedisSettings(host=settings.REDIS_HOST)
+REDIS_SETTINGS = RedisSettings(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 
 async def get_queue_connection():

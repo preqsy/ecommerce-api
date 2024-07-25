@@ -1,3 +1,5 @@
+from typing import Any
+from pydantic import AnyHttpUrl, RedisDsn
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
@@ -21,6 +23,7 @@ class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URL: str = ""
     TEST_SQLALCHEMY_DATABASE_URL: str = ""
     REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
     JWT_SECRET_KEY: str = ""
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRY_TIME: int = 20
