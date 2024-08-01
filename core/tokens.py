@@ -44,8 +44,13 @@ def encode_jwt(payload: dict, expiry_time: timedelta):
     return token
 
 
-def generate_access_token(user_id, user_agent):
-    payload = {"user_id": user_id, "type": "access", "user_agent": user_agent}
+def generate_access_token(user_id, user_agent, default_role):
+    payload = {
+        "user_id": user_id,
+        "type": "access",
+        "user_agent": user_agent,
+        "default_role": default_role,
+    }
     access_token = encode_jwt(
         payload=payload,
         expiry_time=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRY_TIME),
@@ -53,18 +58,27 @@ def generate_access_token(user_id, user_agent):
     return access_token
 
 
-def generate_refresh_token(user_id, user_agent):
-    payload = {"user_id": user_id, "type": "refresh", "user_agent": user_agent}
+def generate_refresh_token(user_id, user_agent, default_role):
+    payload = {
+        "user_id": user_id,
+        "type": "refresh",
+        "user_agent": user_agent,
+        "default_role": default_role,
+    }
     refresh_token = encode_jwt(
         payload=payload, expiry_time=timedelta(days=settings.REFRESH_TOKEN_EXPIRY_TIME)
     )
     return refresh_token
 
 
-def generate_tokens(user_id, user_agent):
-    access_token = generate_access_token(user_id, user_agent)
-    refresh_token = generate_refresh_token(user_id, user_agent)
-    return Tokens(access_token=access_token, refresh_token=refresh_token)
+def generate_tokens(user_id, user_agent, default_role):
+    access_token = generate_access_token(user_id, user_agent, default_role)
+    refresh_token = generate_refresh_token(user_id, user_agent, default_role)
+    return Tokens(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        default_role=default_role,
+    )
 
 
 def verify_access_token(token):
@@ -125,8 +139,12 @@ def create_forget_password_token(auth_id, user_agent):
     )
 
 
-async def regenerate_tokens(token, user_agent, auth_id):
+async def regenerate_tokens(token, user_agent, auth_id, default_role):
+
+    await crud_refresh_token.check_if_refresh_token_exist(token)
 
     token = await deactivate_token(token, auth_id=auth_id)
 
-    return generate_tokens(user_agent=user_agent, user_id=auth_id)
+    return generate_tokens(
+        user_agent=user_agent, user_id=auth_id, default_role=default_role
+    )

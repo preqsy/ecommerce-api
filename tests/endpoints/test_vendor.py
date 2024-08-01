@@ -22,6 +22,7 @@ async def create_vendor(
     sample_register_details: dict = sample_auth_user_create_vendor(),
 ):
     mock_queue_connection.enqueue_job.reset_mock()
+
     login_rsp = await login_user(
         client,
         sample_register_details=sample_register_details,
@@ -44,9 +45,11 @@ async def test_vendor_create_success(
     client,
     database_override_dependencies,
 ):
-    rsp = await create_vendor(client, database_override_dependencies)
-    mock_queue_connection.enqueue_job.assert_called_once()
 
+    rsp = await create_vendor(client, database_override_dependencies)
+    mock_queue_connection.enqueue_job.assert_called()
+
+    assert mock_queue_connection.enqueue_job.call_count == 3
     assert rsp.status_code == status.HTTP_201_CREATED
 
 

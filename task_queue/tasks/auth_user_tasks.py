@@ -1,6 +1,11 @@
+import logging
+
 from crud import CRUDAuthUser, CRUDOtp
-from models.auth_user import AuthUser
+from models import AuthUser
 from utils.password_utils import hash_password
+
+
+logger = logging.getLogger(__name__)
 
 
 async def update_auth_password(ctx, auth_id, password):
@@ -19,7 +24,11 @@ async def update_auth_details(ctx, auth_id, data_obj):
     )
 
 
-async def send_email_otp(ctx, data_obj):
+async def send_email_otp(ctx, data_obj, email):
     crud_otp: CRUDOtp = ctx["crud_otp"]
 
-    crud_otp.create(data_obj)
+    try:
+        await crud_otp.send_and_create_otp(data_obj, email)
+        logger.info(f"OTP Successfull Sent to {email}")
+    except Exception as e:
+        logger.error(e)

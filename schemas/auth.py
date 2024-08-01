@@ -118,3 +118,11 @@ class ChangePassword(BaseModel):
 
 class PasswordChanged(BaseModel):
     password_changed: bool = True
+
+
+class UsernameCheck(BaseModel):
+    username: str
+
+
+class UsernameCheckResponse(BaseModel):
+    username_exists: bool

@@ -3,6 +3,7 @@ from fastapi import Depends
 from pydantic import EmailStr
 
 from core.db import get_db
+from core.errors import MissingResources
 from core.schema import RefreshTokenCreate
 from crud.base import CRUDBase
 from models import AuthUser, RefreshToken
@@ -18,7 +19,16 @@ class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
 
 
 class CRUDRefreshToken(CRUDBase[RefreshToken, RefreshTokenCreate, RefreshTokenCreate]):
-    pass
+
+    async def check_if_refresh_token_exist(self, refresh_token: str):
+        query = (
+            self._db.query(self.model)
+            .filter(self.model.refresh_token == refresh_token)
+            .first()
+        )
+        if not query:
+            raise MissingResources("Refresh Token doesn't exist")
+        return query
 
 
 crud_refresh_token = CRUDRefreshToken(db=get_db(), model=RefreshToken)

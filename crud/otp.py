@@ -8,14 +8,17 @@ from crud.base import CRUDBase
 from models.auth_user import OTP
 from schemas import OTPCreate
 from utils.generate_otp import generate_otp
+from utils.send_email import send_email
 
 
 class CRUDOtp(CRUDBase[OTP, OTPCreate, OTPCreate]):
 
-    def create(self, data_obj: OTPCreate, no_of_tries: int = 0) -> bool:
+    async def send_and_create_otp(
+        self, data_obj: OTPCreate, email, no_of_tries: int = 0
+    ) -> bool:
         if not data_obj.token:
             data_obj.token = generate_otp()
-
+        await send_email(receiver_email=email, otp=data_obj.token)
         new_otp = OTP(
             auth_id=data_obj.auth_id,
             otp=data_obj.token,

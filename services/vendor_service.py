@@ -1,5 +1,4 @@
 from arq import ArqRedis
-from fastapi import BackgroundTasks
 
 from core.errors import InvalidRequest, ResourcesExist
 from crud import CRUDAuthUser, CRUDOtp, CRUDVendor
@@ -25,7 +24,6 @@ class VendorService:
     async def create_vendor(
         self,
         data_obj: VendorCreate,
-        background_tasks: BackgroundTasks,
         current_user: AuthUser,
     ):
 
@@ -49,5 +47,7 @@ class VendorService:
             "update_auth_details", current_user.id, vendor_auth_details
         )
         otp_data_obj = OTPCreate(auth_id=current_user.id, otp_type=OTPType.PHONE_NUMBER)
-        background_tasks.add_task(self.crud_otp.create, otp_data_obj)
+        await self.queue_connection.enqueue_job(
+            "send_email_otp", otp_data_obj, current_user.email
+        )
         return vendor
