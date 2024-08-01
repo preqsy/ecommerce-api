@@ -10,4 +10,5 @@ registered_tasks = [
     save_product_images,
     add_shipping_details,
     add_order_items,
+    send_email_otp,
 ]

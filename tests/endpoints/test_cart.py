@@ -4,7 +4,7 @@ import pytest
 from fastapi import status
 
 from tests.endpoints.test_auth import login_user
-from tests.endpoints.test_customer import create_customer
+from tests.endpoints.test_customer import create_test_customer
 from tests.endpoints.test_product import create_product
 from tests.sample_datas.auth_user_samples import (
     sample_auth_user_create_customer,
@@ -74,7 +74,7 @@ async def create_add_to_cart(
     get_current_verified_role_override_dependency,
     sample_add_to_cart_json: dict = sample_add_to_cart(),
 ):
-    await create_customer(client, database_override_dependencies)
+    await create_test_customer(client, database_override_dependencies)
     await create_product(
         client,
         database_override_dependencies,
@@ -135,7 +135,7 @@ async def test_same_product_id_twice(
     database_override_dependencies,
     get_current_verified_role_override_dependency,
 ):
-    await create_customer(client, database_override_dependencies)
+    await create_test_customer(client, database_override_dependencies)
     await create_product(
         client,
         database_override_dependencies,

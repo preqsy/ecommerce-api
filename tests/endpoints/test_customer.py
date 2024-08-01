@@ -14,7 +14,7 @@ from tests.sample_datas.samples import (
 from tests.mock_dependencies import mock_queue_connection
 
 
-async def create_customer(
+async def create_test_customer(
     client: AsyncClient,
     database_override_dependencies,
     sample_customer_create_details: dict = sample_customer_create(),
@@ -41,10 +41,11 @@ async def test_customer_create_success(
     client,
     database_override_dependencies,
 ):
-    rsp = await create_customer(client, database_override_dependencies)
+    rsp = await create_test_customer(client, database_override_dependencies)
 
-    mock_queue_connection.enqueue_job.assert_called_once()
+    mock_queue_connection.enqueue_job.assert_called()
 
+    assert mock_queue_connection.enqueue_job.call_count == 3
     assert rsp.status_code == status.HTTP_201_CREATED
 
 
@@ -56,7 +57,7 @@ async def test_customer_create_with_a_vendor_as_default_role(
     register_details = sample_auth_user_create_vendor()
     register_details["email"] = "obbyprecious12@gmail.com"
 
-    rsp = await create_customer(
+    rsp = await create_test_customer(
         client,
         database_override_dependencies,
         sample_register_details=register_details,
@@ -75,7 +76,7 @@ async def test_customer_create_short_names(
     # Testing if the endpoint will allow first, last and username to be less than 2 cause it can't be less than 3 characters
     sample_customer_create_dict[field] = sample_customer_create_dict[field][0:2]
 
-    rsp = await create_customer(
+    rsp = await create_test_customer(
         client=client,
         database_override_dependencies=database_override_dependencies,
         sample_customer_create_details=sample_customer_create_dict,
@@ -90,7 +91,7 @@ async def test_customer_create_missing_details(
 ):
     # Testing if the endpoint will allow me to create a customer account without a phone number, country, address and state
     sample_customer_create_dict = sample_customer_create().pop(field)
-    rsp = await create_customer(
+    rsp = await create_test_customer(
         client=client,
         database_override_dependencies=database_override_dependencies,
         sample_customer_create_details=sample_customer_create_dict,

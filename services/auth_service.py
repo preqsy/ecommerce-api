@@ -1,3 +1,4 @@
+from arq import ArqRedis
 from fastapi import BackgroundTasks, Header
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -9,8 +10,8 @@ from core.tokens import (
     generate_tokens,
     verify_access_token,
 )
-from crud import CRUDAuthUser, CRUDRefreshToken, CRUDOtp
-from models.auth_user import AuthUser
+from crud import CRUDAuthUser, CRUDRefreshToken, CRUDOtp, CRUDCustomer, CRUDVendor
+from models import AuthUser
 from schemas import (
     AuthUserCreate,
     AuthUserResponse,
@@ -24,6 +25,7 @@ from schemas import (
     NewPassword,
     PasswordChanged,
     ResetPassword,
+    UsernameCheckResponse,
 )
 from utils.password_utils import hash_password, verify_password
 
@@ -35,10 +37,16 @@ class AuthUserService:
         crud_auth_user: CRUDAuthUser,
         crud_refresh_token: CRUDRefreshToken,
         crud_otp: CRUDOtp,
+        queue_connection: ArqRedis,
+        crud_customer: CRUDCustomer,
+        crud_vendor: CRUDVendor,
     ):
         self.crud_auth_user = crud_auth_user
         self.crud_refresh_token = crud_refresh_token
         self.crud_otp = crud_otp
+        self.queue_connection = queue_connection
+        self.crud_customer = crud_customer
+        self.crud_vendor = crud_vendor
 
     async def register_auth_user(
         self,
@@ -53,8 +61,15 @@ class AuthUserService:
         data_obj.password = hash_password(data_obj.password)
         new_user = await self.crud_auth_user.create(data_obj)
         otp_data_obj = OTPCreate(auth_id=new_user.id, otp_type=OTPType.EMAIL)
-        background_task.add_task(self.crud_otp.create, otp_data_obj)
-        tokens = generate_tokens(user_id=new_user.id, user_agent=user_agent)
+
+        await self.queue_connection.enqueue_job(
+            "send_email_otp", otp_data_obj, new_user.email
+        )
+        tokens = generate_tokens(
+            user_id=new_user.id,
+            user_agent=user_agent,
+            default_role=data_obj.default_role,
+        )
         token_obj = RefreshTokenCreate(
             auth_id=new_user.id,
             refresh_token=tokens.refresh_token,
@@ -134,7 +149,12 @@ class AuthUserService:
         otp_obj = OTPCreate(
             auth_id=user_query.id, otp_type=OTPType.RESET_PASSWORD, token=token
         )
-        background_tasks.add_task(self.crud_otp.create, otp_obj, OTP_QUERY_COUNT)
+        background_tasks.add_task(
+            self.crud_otp.send_and_create_otp,
+            otp_obj,
+            user_query.email,
+            OTP_QUERY_COUNT,
+        )
 
         return ForgotPassword()
 
@@ -170,3 +190,11 @@ class AuthUserService:
         )
 
         return PasswordChanged()
+
+    async def check_if_username_exists(self, username: str):
+
+        if self.crud_customer.get_by_username(
+            username
+        ) or self.crud_vendor.get_by_username(username):
+            return True
+        return False

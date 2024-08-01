@@ -23,6 +23,8 @@ from schemas import (
     RefreshTokenSchema,
     ChangePassword,
     PasswordChanged,
+    UsernameCheck,
+    UsernameCheckResponse,
 )
 from models import AuthUser
 from services import AuthUserService
@@ -112,7 +114,7 @@ async def get_me(
 async def refresh_access_token(
     token: RefreshTokenSchema,
     current_user: AuthUser = Depends(get_current_auth_user),
-    user_agent: str = Header(None),
+    user_agent: str = Header(None, description="Browser Info"),
 ):
 
     return await regenerate_tokens(
@@ -131,3 +133,15 @@ async def change_password(
         current_user_password=current_user.password,
         current_user_id=current_user.id,
     )
+
+
+@router.post(
+    "/check-username",
+    response_model=UsernameCheckResponse,
+)
+async def check_if_username_exists(
+    username: UsernameCheck,
+    auth_user_service: AuthUserService = Depends(get_auth_user_service),
+):
+    rsp = await auth_user_service.check_if_username_exists(username.username)
+    return UsernameCheckResponse(username_exists=rsp)

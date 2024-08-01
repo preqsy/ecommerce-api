@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     FORGET_PASSWORD_EXPIRY_TIME: int = 5
     STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_SECRET_KEY: str = ""
+    MAIL_SECRET_KEY: str = ""
+    SWIFTBUY_MAIL: str = ""
     paystack_config: PaystackConfig = PaystackConfig()
 
     class Config:

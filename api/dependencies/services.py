@@ -31,11 +31,17 @@ def get_auth_user_service(
     crud_auth_user=Depends(get_crud_auth_user),
     crud_refresh_token=Depends(get_crud_refresh_token),
     crud_otp=Depends(get_crud_otp),
+    queue_connection=Depends(get_queue_connection),
+    crud_customer=Depends(get_crud_customer),
+    crud_vendor=Depends(get_crud_vendor),
 ) -> AuthUserService:
     return AuthUserService(
         crud_auth_user=crud_auth_user,
         crud_refresh_token=crud_refresh_token,
         crud_otp=crud_otp,
+        queue_connection=queue_connection,
+        crud_customer=crud_customer,
+        crud_vendor=crud_vendor,
     )
 
 

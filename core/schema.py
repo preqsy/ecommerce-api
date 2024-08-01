@@ -1,9 +1,12 @@
 from pydantic import BaseModel
 
+from schemas.base import Roles
+
 
 class Tokens(BaseModel):
     access_token: str
     refresh_token: str
+    default_role: Roles
 
 
 class TokenData(BaseModel):
