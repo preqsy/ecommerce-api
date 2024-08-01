@@ -139,8 +139,12 @@ def create_forget_password_token(auth_id, user_agent):
     )
 
 
-async def regenerate_tokens(token, user_agent, auth_id):
+async def regenerate_tokens(token, user_agent, auth_id, default_role):
+
+    await crud_refresh_token.check_if_refresh_token_exist(token)
 
     token = await deactivate_token(token, auth_id=auth_id)
 
-    return generate_tokens(user_agent=user_agent, user_id=auth_id)
+    return generate_tokens(
+        user_agent=user_agent, user_id=auth_id, default_role=default_role
+    )

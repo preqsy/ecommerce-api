@@ -2,9 +2,6 @@ import smtplib, ssl
 
 from core import settings
 
-PORT = 465
-SMTP_SERVER = "smtp.gmail.com"
-
 
 async def send_email(receiver_email, otp):
     subject = f"Subject: Your One-Time Password (OTP) for SwiftBuy"
@@ -23,7 +20,9 @@ async def send_email(receiver_email, otp):
     message = f"Subject: {subject}\n\n{body}"
     context = ssl.create_default_context()
 
-    with smtplib.SMTP_SSL(SMTP_SERVER, PORT, context=context) as server:
+    with smtplib.SMTP_SSL(
+        settings.SMTP_SERVER, settings.MAIL_PORT, context=context
+    ) as server:
         server.login(settings.SWIFTBUY_MAIL, settings.MAIL_SECRET_KEY)
         server.sendmail(
             from_addr=settings.SWIFTBUY_MAIL,

@@ -97,7 +97,11 @@ class AuthUserService:
             plain_password=form_data.password, hashed_password=user_query.password
         ):
             raise InvalidRequest("Incorrect Credentials")
-        tokens = generate_tokens(user_id=user_query.id, user_agent=user_agent)
+        tokens = generate_tokens(
+            user_id=user_query.id,
+            user_agent=user_agent,
+            default_role=user_query.default_role,
+        )
         token_obj = RefreshTokenCreate(
             refresh_token=tokens.refresh_token,
             auth_id=user_query.id,

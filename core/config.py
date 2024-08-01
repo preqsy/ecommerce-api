@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str = ""
     MAIL_SECRET_KEY: str = ""
     SWIFTBUY_MAIL: str = ""
+    MAIL_PORT: int
+    SMTP_SERVER: str = ""
     paystack_config: PaystackConfig = PaystackConfig()
 
     class Config:

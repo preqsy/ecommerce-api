@@ -118,7 +118,10 @@ async def refresh_access_token(
 ):
 
     return await regenerate_tokens(
-        token=token.refresh_token, user_agent=user_agent, auth_id=current_user.id
+        token=token.refresh_token,
+        user_agent=user_agent,
+        auth_id=current_user.id,
+        default_role=current_user.default_role,
     )
 
 
