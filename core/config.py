@@ -32,9 +32,9 @@ class Settings(BaseSettings):
     STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_SECRET_KEY: str = ""
     MAIL_SECRET_KEY: str = ""
-    SWIFTBUY_MAIL: str = ""
+    SWIFTBUY_MAIL: str = "swiftbuyx@gmail.com"
     MAIL_PORT: int
-    SMTP_SERVER: str = ""
+    SMTP_SERVER: str = "smtp.gmail.com"
     paystack_config: PaystackConfig = PaystackConfig()
 
     class Config:
