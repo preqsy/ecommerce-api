@@ -90,9 +90,6 @@ class AuthUserService:
         if not user_query:
             raise InvalidRequest("Incorrect Credentials")
 
-        if not user_query.email_verified:
-            raise InvalidRequest("Unverfied Email")
-
         if not verify_password(
             plain_password=form_data.password, hashed_password=user_query.password
         ):
