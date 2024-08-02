@@ -59,7 +59,7 @@ async def verify_email_or_phone(
     return await auth_user_service.verify(data_obj=data_obj)
 
 
-@router.post("/token", status_code=status.HTTP_201_CREATED, response_model=Tokens)
+@router.post("/login", status_code=status.HTTP_201_CREATED, response_model=Tokens)
 async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_agent: str = Header(None),
