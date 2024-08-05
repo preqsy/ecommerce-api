@@ -18,6 +18,15 @@ jobs:
       MAIL_SECRET_KEY: ${{secrets.MAIL_SECRET_KEY}}
       MAIL_PORT: ${{secrets.MAIL_PORT}}
 
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+          POSTGRES_DB: ${{secrets.DATABASE_NAME}}_test
+        ports:
+          - 5432:5432
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.7
