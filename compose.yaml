@@ -1,39 +1,85 @@
-version: "3.8"
+name: Build and Deploy Code
 
-services:
-  redis:
-    image: redis:alpine
-    ports:
-      - "6389:6379"
+on: push
 
-  db:
-    image: postgres:latest
+jobs:
+  build:
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: rootpassword
-      POSTGRES_DB: ecommerce
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      name: preqsy-ecomm
+    env:
+      SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}
+      TEST_SQLALCHEMY_DATABASE_URL: ${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRY_TIME: ${{ secrets.ACCESS_TOKEN_EXPIRY_TIME }}
+      REFRESH_TOKEN_EXPIRY_TIME: ${{ secrets.REFRESH_TOKEN_EXPIRY_TIME }}
+      STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
+      MAIL_SECRET_KEY: ${{ secrets.MAIL_SECRET_KEY }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
 
-  web:
-    build: .
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-  queue:
-    build:
-      context: .
-      dockerfile: "task_queue/Dockerfile"
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-volumes:
-  postgres_data:
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DATABASE_NAME }}_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.10.9
+
+      - name: Display Python Version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Check Poetry version
+        run: poetry --version
+
+      - name: Install project dependencies
+        run: poetry install --no-root
+
+      - name: Print installed packages
+        run: poetry show
+
+      - name: Print Environment Variables
+        run: |
+          echo "SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}"
+          echo "TEST_SQLALCHEMY_DATABASE_URL: ${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }}"
+
+      - name: Build Docker image
+        run: docker build -t my-test-image -f tests/dockerfile/Dockerfile .
+
+      - name: Run Docker container
+        run: |
+          docker run --rm \
+          -e SQLALCHEMY_DATABASE_URL=${{ secrets.SQLALCHEMY_DATABASE_URL }} \
+          -e TEST_SQLALCHEMY_DATABASE_URL=${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }} \
+          -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+          -e ALGORITHM=${{ secrets.ALGORITHM }} \
+          -e ACCESS_TOKEN_EXPIRY_TIME=${{ secrets.ACCESS_TOKEN_EXPIRY_TIME }} \
+          -e REFRESH_TOKEN_EXPIRY_TIME=${{ secrets.REFRESH_TOKEN_EXPIRY_TIME }} \
+          -e STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }} \
+          -e STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
+          -e PAYSTACK_SECRET_KEY=${{ secrets.PAYSTACK_SECRET_KEY }} \
+          -e MAIL_SECRET_KEY=${{ secrets.MAIL_SECRET_KEY }} \
+          -e MAIL_PORT=${{ secrets.MAIL_PORT }} \
+          my-test-image poetry run pytest -vv
