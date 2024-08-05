@@ -17,7 +17,6 @@ jobs:
       PAYSTACK_SECRET_KEY: ${{secrets.PAYSTACK_SECRET_KEY}}
       MAIL_SECRET_KEY: ${{secrets.MAIL_SECRET_KEY}}
       MAIL_PORT: ${{secrets.MAIL_PORT}}
-      # TEST_SQLALCHEMY_DATABASE_URL: ${{secrets.TEST_SQLALCHEMY_DATABASE_URL}}
 
     runs-on: ubuntu-latest
     steps:
