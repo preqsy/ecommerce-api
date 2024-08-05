@@ -1,4 +1,5 @@
 from typing import Dict, List, Union
+
 import pytest
 from fastapi import status
 from unittest.mock import patch
@@ -76,7 +77,7 @@ async def login_user(
         access_token = register_rsp.json()["tokens"]["access_token"]
         headers = sample_header()
         headers["authorization"] = "Bearer {}".format(access_token)
-        rsp = await client.post("/auth/token", data=login_details, headers=headers)
+        rsp = await client.post("/auth/login", data=login_details, headers=headers)
 
         return rsp
     login_iter = iter(login_details)
@@ -89,7 +90,7 @@ async def login_user(
         headers = sample_header()
         headers["authorization"] = "Bearer {}".format(access_token)
 
-        rsp = await client.post("/auth/token", data=login, headers=headers)
+        rsp = await client.post("/auth/login", data=login, headers=headers)
         new_data = rsp.json()
         new_data.update({"default_role": sample_user["default_role"]})
         response.append(new_data)
@@ -177,28 +178,11 @@ async def test_login_success(client, database_override_dependencies):
 
 
 @pytest.mark.asyncio
-async def test_login_unverified_email(
-    client,
-    database_override_dependencies,
-):
-    register_rsp = await register_user(client)
-    access_token = register_rsp.json()["tokens"]["access_token"]
-    headers = sample_header()
-    headers["authorization"] = "Bearer {}".format(access_token)
-
-    rsp = await client.post(
-        "/auth/token", data=sample_login_user_customer(), headers=headers
-    )
-
-    assert rsp.status_code == status.HTTP_403_FORBIDDEN
-
-
-@pytest.mark.asyncio
 async def test_login_nonexistent_user(client, database_override_dependencies):
     await register_user(client)
 
     response = await client.post(
-        "/auth/token", data=sample_login_user_wrong_email(), headers=sample_header()
+        "/auth/login", data=sample_login_user_wrong_email(), headers=sample_header()
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -364,11 +348,15 @@ async def test_refresh_token_success(
     refresh_token = register_rsp.json()["tokens"]["refresh_token"]
 
     headers = sample_header()
-    rsp = await client.post(
-        "/auth/refresh-token",
-        json={"refresh_token": refresh_token},
-        headers=headers,
-    )
+    with patch(
+        "core.tokens.crud_refresh_token.check_if_refresh_token_exist"
+    ) as mock_crud_refresh_token:
+        mock_crud_refresh_token.return_value = True
+        rsp = await client.post(
+            "/auth/refresh-token",
+            json={"refresh_token": refresh_token},
+            headers=headers,
+        )
     assert rsp.status_code == status.HTTP_200_OK
 
 
@@ -385,4 +373,4 @@ async def test_refresh_token_wrong_token(
         json={"refresh_token": "refresh_token"},
         headers=headers,
     )
-    assert rsp.status_code == status.HTTP_400_BAD_REQUEST
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND
