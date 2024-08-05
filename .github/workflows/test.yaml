@@ -56,5 +56,10 @@ jobs:
       - name: Print installed packages
         run: poetry show
 
+      - name: Print Environment Variables
+        run: |
+          echo "SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}"
+          echo "TEST_SQLALCHEMY_DATABASE_URL: ${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }}"
+
       - name: Run Pytest
         run: poetry run pytest -vv
