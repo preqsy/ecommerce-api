@@ -106,6 +106,16 @@ def get_current_auth_user(
     return auth_user
 
 
+def get_current_unverified_auth_user(
+    token=Depends(oauth2_scheme), db: Session = Depends(get_db)
+) -> AuthUser:
+    token = verify_access_token(token)
+    auth_user = db.query(AuthUser).filter(AuthUser.id == token.user_id).first()
+    if not auth_user:
+        raise CredentialException("User not found")
+    return auth_user
+
+
 def get_current_verified_vendor(
     token=Depends(oauth2_scheme),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
@@ -141,7 +151,7 @@ def create_forget_password_token(auth_id, user_agent):
 
 async def regenerate_tokens(token, user_agent, auth_id, default_role):
 
-    await crud_refresh_token.check_if_refresh_token_exist(token)
+    crud_refresh_token.check_if_refresh_token_exist(token)
 
     token = await deactivate_token(token, auth_id=auth_id)
 

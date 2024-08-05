@@ -1,4 +1,5 @@
 from typing import Optional
+
 from fastapi import Depends
 from pydantic import EmailStr
 
@@ -20,7 +21,7 @@ class CRUDAuthUser(CRUDBase[AuthUser, AuthUserCreate, AuthUserCreate]):
 
 class CRUDRefreshToken(CRUDBase[RefreshToken, RefreshTokenCreate, RefreshTokenCreate]):
 
-    async def check_if_refresh_token_exist(self, refresh_token: str):
+    def check_if_refresh_token_exist(self, refresh_token: str):
         query = (
             self._db.query(self.model)
             .filter(self.model.refresh_token == refresh_token)

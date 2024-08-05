@@ -12,8 +12,8 @@ from schemas import (
     CartUpdateReturn,
     CartSummary,
     CheckoutCreate,
+    PaymentVerified,
 )
-from schemas.order import PaymentVerified
 from services.cart_service import CartService
 
 
