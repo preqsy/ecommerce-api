@@ -13,7 +13,7 @@ from core.errors import CredentialException, InvalidRequest
 from crud import CRUDAuthUser, get_crud_auth_user, crud_refresh_token
 from models.auth_user import AuthUser
 from schemas.base import Roles
-from .schema import Tokens, TokenData
+from .schema import Tokens, TokenData, RefreshTokenCreate
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -155,6 +155,11 @@ async def regenerate_tokens(token, user_agent, auth_id, default_role):
 
     token = await deactivate_token(token, auth_id=auth_id)
 
-    return generate_tokens(
+    tokens = generate_tokens(
         user_agent=user_agent, user_id=auth_id, default_role=default_role
     )
+    token_obj = RefreshTokenCreate(
+        auth_id=auth_id, refresh_token=tokens.refresh_token, user_agent=user_agent
+    )
+    await crud_refresh_token.create(token_obj)
+    return tokens
