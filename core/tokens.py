@@ -99,10 +99,12 @@ def verify_access_token(token):
 def get_current_auth_user(
     token=Depends(oauth2_scheme), db: Session = Depends(get_db)
 ) -> AuthUser:
+    # TODO: Change this to accept only verified emails when i deploy completely with background worker
+
     token = verify_access_token(token)
     auth_user = db.query(AuthUser).filter(AuthUser.id == token.user_id).first()
-    if not auth_user or not auth_user.email_verified:
-        raise CredentialException("User not found or email not verified")
+    if not auth_user:
+        raise CredentialException("User not found")
     return auth_user
 
 
@@ -113,6 +115,7 @@ def get_current_unverified_auth_user(
     auth_user = db.query(AuthUser).filter(AuthUser.id == token.user_id).first()
     if not auth_user:
         raise CredentialException("User not found")
+
     return auth_user
 
 
@@ -120,12 +123,16 @@ def get_current_verified_vendor(
     token=Depends(oauth2_scheme),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ) -> AuthUser:
+    # TODO: Change this to accept only verified emails and phone numbers  when i deploy completely with background worker
     token = verify_access_token(token)
     auth_user = crud_auth_user.get_or_raise_exception(id=token.user_id)
     if not (auth_user.default_role == Roles.VENDOR):
         raise InvalidRequest("Customer cannot perform this action")
-    if not (auth_user.email_verified and auth_user.phone_verified):
-        raise InvalidRequest("Complete your registration")
+    if not auth_user.role_id:
+        raise InvalidRequest(
+            "Complete your registration by creating your vendor account"
+        )
+
     return auth_user
 
 
@@ -133,12 +140,18 @@ def get_current_verified_customer(
     token=Depends(oauth2_scheme),
     crud_auth_user: CRUDAuthUser = Depends(get_crud_auth_user),
 ) -> AuthUser:
+    # TODO: Change this to accept only verified emails and phone numbers  when i deploy completely with background worker
+
     token = verify_access_token(token)
     auth_user = crud_auth_user.get_or_raise_exception(id=token.user_id)
+
     if not (auth_user.default_role == Roles.CUSTOMER):
         raise InvalidRequest("Vendor cannot perform this action")
-    if not (auth_user.email_verified and auth_user.phone_verified):
-        raise InvalidRequest("Complete your registration")
+
+    if not auth_user.role_id:
+        raise InvalidRequest(
+            "Complete your registration by creating your customer account"
+        )
     return auth_user
 
 
