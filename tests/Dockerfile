@@ -11,4 +11,5 @@ COPY . .
 
 RUN poetry install --no-root
 
-CMD ["poetry" "run" "pytest" "-vv"]
+
+CMD ["poetry", "run", "pytest", "-vv"]
