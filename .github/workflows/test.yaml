@@ -65,7 +65,7 @@ jobs:
           echo "SQLALCHEMY_DATABASE_URL: ${{ secrets.SQLALCHEMY_DATABASE_URL }}"
           echo "TEST_SQLALCHEMY_DATABASE_URL: ${{ secrets.TEST_SQLALCHEMY_DATABASE_URL }}"
       - name: Run Pytest
-        run: poetry run pytest -vv -x
+        run: poetry run pytest -vv
 
       # - name: Build Docker image
       #   run: docker build -t my-test-image -f tests/Dockerfile .
