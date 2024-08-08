@@ -5,7 +5,7 @@ from .order import *
 from .customer import *
 from .vendor import *
 
-# from core.db import engine
+from core.db import engine
 
 # auth_user.Base.metadata.create_all(bind=engine)
 # product.Base.metadata.create_all(bind=engine)
