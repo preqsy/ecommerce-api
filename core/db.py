@@ -4,7 +4,7 @@ from core import settings
 
 
 print(f"Database URL: {settings.SQLALCHEMY_DATABASE_URL}")
-engine = create_engine(url=settings.SQLALCHEMY_DATABASE_URL)
+engine = create_engine(url=str(settings.SQLALCHEMY_DATABASE_URL))
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 Base = declarative_base()
