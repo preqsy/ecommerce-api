@@ -339,38 +339,39 @@ async def test_change_password_wrong_new_password_format(
     assert rsp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# @pytest.mark.asyncio
-# async def test_refresh_token_success(
-#     client, database_override_dependencies, get_current_auth_user_override_dependency
-# ):
+@pytest.mark.asyncio
+async def test_refresh_token_success(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
 
-#     register_rsp = await register_user(client)
-#     refresh_token = register_rsp.json()["tokens"]["refresh_token"]
+    register_rsp = await register_user(client)
+    refresh_token = register_rsp.json()["tokens"]["refresh_token"]
 
-#     headers = sample_header()
-#     with patch(
-#         "core.tokens.crud_refresh_token.check_if_refresh_token_exist"
-#     ) as mock_crud_refresh_token:
-#         mock_crud_refresh_token.return_value = True
-#         rsp = await client.post(
-#             "/auth/refresh-token",
-#             json={"refresh_token": refresh_token},
-#             headers=headers,
-#         )
-#     assert rsp.status_code == status.HTTP_200_OK
+    headers = sample_header()
+    with patch(
+        "core.tokens.crud_refresh_token.check_if_refresh_token_exist"
+    ) as mock_crud_refresh_token:
+        mock_crud_refresh_token.return_value = True
+        rsp = await client.post(
+            "/auth/refresh-token",
+            json={"refresh_token": refresh_token},
+            headers=headers,
+        )
+        print(rsp.text)
+    assert rsp.status_code == status.HTTP_200_OK
 
 
-# @pytest.mark.asyncio
-# async def test_refresh_token_wrong_token(
-#     client, database_override_dependencies, get_current_auth_user_override_dependency
-# ):
+@pytest.mark.asyncio
+async def test_refresh_token_wrong_token(
+    client, database_override_dependencies, get_current_auth_user_override_dependency
+):
 
-#     await register_user(client)
+    await register_user(client)
 
-#     headers = sample_header()
-#     rsp = await client.post(
-#         "/auth/refresh-token",
-#         json={"refresh_token": "refresh_token"},
-#         headers=headers,
-#     )
-#     assert rsp.status_code == status.HTTP_404_NOT_FOUND
+    headers = sample_header()
+    rsp = await client.post(
+        "/auth/refresh-token",
+        json={"refresh_token": "refresh_token"},
+        headers=headers,
+    )
+    assert rsp.status_code == status.HTTP_404_NOT_FOUND

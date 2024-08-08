@@ -114,10 +114,10 @@ async def get_me(
 @router.post("/refresh-token", response_model=Tokens)
 async def refresh_access_token(
     token: RefreshTokenSchema,
-    current_user: AuthUser = Depends(get_current_unverified_auth_user),
+    current_user: AuthUser = Depends(get_current_auth_user),
     user_agent: str = Header(None, description="Browser Info"),
 ):
-
+    # TODO: Allow unverified users refresh token
     return await regenerate_tokens(
         token=token.refresh_token,
         user_agent=user_agent,
