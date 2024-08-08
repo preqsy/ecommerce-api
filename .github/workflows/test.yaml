@@ -20,11 +20,24 @@ jobs:
       MAIL_PORT: ${{ secrets.MAIL_PORT }}
 
     services:
-      postgres:
+      postgres-main:
         image: postgres
         env:
           POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           POSTGRES_DB: ${{ secrets.DATABASE_NAME }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres-test:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DATABASE_NAME }}_test
         ports:
           - 5432:5432
         options: >-
@@ -56,9 +69,6 @@ jobs:
 
       - name: Install project dependencies
         run: poetry install --no-root
-
-      # - name: Print installed packages
-      #   run: poetry show
 
       - name: Print Environment Variables
         run: |
