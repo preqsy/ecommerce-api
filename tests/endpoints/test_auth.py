@@ -357,7 +357,9 @@ async def test_refresh_token_success(
             json={"refresh_token": refresh_token},
             headers=headers,
         )
+        
         assert rsp.status_code == status.HTTP_200_OK
+
 
 
 @pytest.mark.asyncio

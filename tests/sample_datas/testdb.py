@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from core import settings
 
 
-engine = create_engine(url=f"{settings.TEST_SQLALCHEMY_DATABASE_URL}")
+engine = create_engine(url=str(settings.TEST_SQLALCHEMY_DATABASE_URL))
 TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 

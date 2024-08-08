@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6381:6379"
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=rootpassword
+      - POSTGRES_DB=ecommerce_test
+    ports:
+      - "5436:5432"
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+
+  test:
+    build:
+      context: .
+      dockerfile: "tests/Dockerfile"
+    env_file:
+      - ".env"
+    depends_on:
+      - redis
+      - db
+    entrypoint: ["sh", "-c", "sleep 10 && poetry run pytest -vv -x"]
