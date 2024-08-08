@@ -18,4 +18,4 @@ class RefreshTokenCreate(BaseModel):
     auth_id: int
     refresh_token: str
     user_agent: str
-    active: bool = False
+    active: bool = True
