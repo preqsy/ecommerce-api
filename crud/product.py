@@ -64,7 +64,7 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         )
         return product_query
 
-    def get_or_raise_exception(self, id: int) -> Product:
+    def get_active_products(self, id: int) -> Product:
         query_result = self._db.query(self.model).filter(self.model.id == id).first()
         if not query_result or not query_result.product_status:
             raise MissingResources

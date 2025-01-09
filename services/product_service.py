@@ -107,7 +107,7 @@ class ProductService:
         self,
         product_id: int,
     ):
-        product = self.crud_product.get_or_raise_exception(product_id)
+        product = self.crud_product.get_active_products(id=product_id)
 
         return product
 
@@ -118,7 +118,7 @@ class ProductService:
         vendor_id: int,
     ):
 
-        product = self.crud_product.get_or_raise_exception(product_id)
+        product = self.crud_product.get_active_products(id=product_id)
         if product.vendor_id != vendor_id:
             raise InvalidRequest("Product doesn't belong to you")
 
@@ -145,7 +145,7 @@ class ProductService:
     ):
 
         product_image = self.crud_product_image.get_or_raise_exception(product_image_id)
-        product = self.crud_product.get_or_raise_exception(id=product_image.product_id)
+        product = self.crud_product.get_active_products(id=product_image.product_id)
         if product.vendor_id != vendor_id.role_id:
             raise InvalidRequest("Product doesn't belong to you")
         data_obj.product_image = str(data_obj.product_image)
@@ -161,7 +161,7 @@ class ProductService:
         product_id: int,
         vendor_id: int,
     ):
-        product = self.crud_product.get_or_raise_exception(product_id)
+        product = self.crud_product.get_active_products(id=product_id)
         if product.vendor_id != vendor_id:
             raise InvalidRequest("Product doesn't belong to you")
         await self.crud_product.delete(product_id)
@@ -170,7 +170,7 @@ class ProductService:
         self,
         data_obj: ProductReviewCreate,
     ):
-        self.crud_product.get_or_raise_exception(id=data_obj.product_id)
+        self.crud_product.get_active_products(id=data_obj.product_id)
         product_review = await self.crud_product_review.create(data_obj)
         return product_review
 

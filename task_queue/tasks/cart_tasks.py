@@ -64,7 +64,7 @@ async def update_stock_after_checkout(ctx, order_id):
         (item.product_id, item.quantity) for item in order_items
     ]
     for product_id, cart_item_quantity in product_id_and_quantity:
-        product = crud_product.get_or_raise_exception(id=product_id)
+        product = crud_product.get_active_products(id=product_id)
         quantity = product.stock - cart_item_quantity
         await crud_product.update(id=product_id, data_obj={Product.STOCK: quantity})
     return
