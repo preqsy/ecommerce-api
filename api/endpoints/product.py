@@ -21,7 +21,11 @@ from services.product_service import ProductService
 router = APIRouter(prefix="/products", tags=["Product"])
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=ProductReturn)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProductReturn,
+)
 async def create_product(
     data_obj: ProductCreate,
     current_user: AuthUser = Depends(get_current_verified_vendor),

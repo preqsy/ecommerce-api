@@ -105,3 +105,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         )
         self._db.commit()
         return
+
+    async def bulk_insert(self, data_objs: Union[CreateSchemaType]):
+        data_list = [self.model(**data_obj.model_dump()) for data_obj in data_objs]
+        datas = self._db.bulk_save_objects(data_list)
+        self._db.commit()
+        return datas

@@ -15,6 +15,7 @@ from schemas import (
     ProductReviewCreate,
     ProductReviewUpdate,
     ProductUpdate,
+    ProductImageCreate,
 )
 from utils.generate_sku import generate_random_sku
 
@@ -59,10 +60,14 @@ class ProductService:
         del data_obj.product_images
 
         product = await self.crud_product.create(data_obj)
-        await self.queue_connection.enqueue_job(
-            "save_product_images", product.id, product_images
-        )
-        return product
+        images_obj = [
+            ProductImageCreate(product_id=product.id, product_image=str(image))
+            for image in product_images
+        ]
+        await self.crud_product_image.bulk_insert(data_objs=images_obj)
+
+        new_product = self.crud_product.get_single_product_by_id(id=product.id)
+        return new_product
 
     async def get_products_customer(
         self,
@@ -70,7 +75,7 @@ class ProductService:
         skip: int,
         limit: int,
     ):
-        products = self.crud_product.get_all_products(
+        products = self.crud_product.get_all_products_public(
             search=search, skip=skip, limit=limit
         )
         if not products:

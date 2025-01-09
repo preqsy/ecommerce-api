@@ -45,9 +45,7 @@ class Product(Base):
     )
 
     cart_items = relationship("Cart", back_populates="product")
-    product_images = relationship(
-        "ProductImage", back_populates="product", cascade="all, delete-orphan"
-    )
+    product_images = relationship("ProductImage", back_populates="product")
     category = relationship("ProductCategory", back_populates="products")
     reviews = relationship("ProductReview")
 
