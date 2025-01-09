@@ -21,7 +21,7 @@ from schemas import (
 
 class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
 
-    def get_all_products(
+    def get_all_products_public(
         self, search: str | None, skip=0, limit=10
     ) -> Union[List[Product], None]:
 
@@ -69,6 +69,17 @@ class CRUDProduct(CRUDBase[Product, ProductCreate, ProductUpdate]):
         if not query_result or not query_result.product_status:
             raise MissingResources
         return query_result
+
+    def get_single_product_by_id(self, id: int):
+        query_result = (
+            self._db.query(Product)
+            .options(sqlalchemy.orm.joinedload(Product.product_images))
+            .options(sqlalchemy.orm.joinedload(Product.category))
+            .filter(Product.id == id)
+            .first()
+        )
+
+        return query_result if query_result else None
 
 
 class CRUDProductReview(
