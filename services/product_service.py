@@ -38,6 +38,10 @@ class ProductService:
         self.crud_product_review = crud_product_review
         self.queue_connection = queue_connection
 
+    async def get_product_categories(self):
+        categories = self.crud_product_category.get_multi(limit=1000)
+        return categories
+
     async def create_product(
         self,
         data_obj: ProductCreate,
@@ -93,6 +97,8 @@ class ProductService:
         product = self.crud_product.get_products_for_vendor(
             search=search, vendor_id=vendor_id, skip=skip, limit=limit
         )
+        if not product:
+            raise MissingResources("You haven't added any products yet")
         return product
 
     async def sort_product_by_price(
@@ -107,7 +113,7 @@ class ProductService:
         self,
         product_id: int,
     ):
-        product = self.crud_product.get_or_raise_exception(product_id)
+        product = self.crud_product.get_active_products(id=product_id)
 
         return product
 
@@ -118,7 +124,7 @@ class ProductService:
         vendor_id: int,
     ):
 
-        product = self.crud_product.get_or_raise_exception(product_id)
+        product = self.crud_product.get_active_products(id=product_id)
         if product.vendor_id != vendor_id:
             raise InvalidRequest("Product doesn't belong to you")
 
@@ -145,7 +151,7 @@ class ProductService:
     ):
 
         product_image = self.crud_product_image.get_or_raise_exception(product_image_id)
-        product = self.crud_product.get_or_raise_exception(id=product_image.product_id)
+        product = self.crud_product.get_active_products(id=product_image.product_id)
         if product.vendor_id != vendor_id.role_id:
             raise InvalidRequest("Product doesn't belong to you")
         data_obj.product_image = str(data_obj.product_image)
@@ -161,7 +167,7 @@ class ProductService:
         product_id: int,
         vendor_id: int,
     ):
-        product = self.crud_product.get_or_raise_exception(product_id)
+        product = self.crud_product.get_active_products(id=product_id)
         if product.vendor_id != vendor_id:
             raise InvalidRequest("Product doesn't belong to you")
         await self.crud_product.delete(product_id)
@@ -170,7 +176,7 @@ class ProductService:
         self,
         data_obj: ProductReviewCreate,
     ):
-        self.crud_product.get_or_raise_exception(id=data_obj.product_id)
+        self.crud_product.get_active_products(id=data_obj.product_id)
         product_review = await self.crud_product_review.create(data_obj)
         return product_review
 

@@ -11,6 +11,7 @@ from .monitoring import router as monitoring_router
 
 router = APIRouter()
 
+
 router.include_router(auth_router)
 router.include_router(customer_router)
 router.include_router(vendor_router)
