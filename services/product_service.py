@@ -38,6 +38,10 @@ class ProductService:
         self.crud_product_review = crud_product_review
         self.queue_connection = queue_connection
 
+    async def get_product_categories(self):
+        categories = self.crud_product_category.get_multi(limit=1000)
+        return categories
+
     async def create_product(
         self,
         data_obj: ProductCreate,
@@ -93,6 +97,8 @@ class ProductService:
         product = self.crud_product.get_products_for_vendor(
             search=search, vendor_id=vendor_id, skip=skip, limit=limit
         )
+        if not product:
+            raise MissingResources("You haven't added any products yet")
         return product
 
     async def sort_product_by_price(
